@@ -4,15 +4,15 @@ set(0,'DefaultFigureWindowStyle','docked')
 
 E = 200e3; nu = 0.3;
 pressureNormal = 100;
-a = 300; b = a + 101.1; c = b + 74.1; h = 500;
-interferencia = 0.6636;
-nElementsZ = 2; nElementsR = 2; distorsion = 0;
+a = 300; b = a + 101.1; c = b + 74.1; h = 250;
+interferencia = 50;
+nElementsZ = 20; nElementsR = 20; distorsion = 0;
 
 %% Preprocess
 
 elementType='Q4';          %'CST' 'LST' 'Q4' 'Q8' 'Q9'
 problemType='Axisymmetric';       %'Stress' 'Strain' 'Axisymmetric'
-nDimensions=2;              %Problem dimension
+nDimensions=2;              % Problem dimension
 
 [elements1,nodes1,vertexNodes1,sideNodes]=quadrilateralDomainMeshGenerator_catedra(elementType,'Straight',b-a,h,nElementsR,nElementsZ,0,distorsion);
 nodes1(:,1) = nodes1(:,1) + a;
@@ -51,40 +51,55 @@ pointLoadsArray = distributedLoad_3(elementType,Lside,pointLoadsArray,nodes,pres
 %% Solver
 
 % Constraints
-% sideNodes1(2,:) - sideNodes2(4,:) = intereferencia
-C = zeros(nConstraints,nTotalDof);
 rightSideDOF = convertNode2Dof(sideNodes(2,:),nDimensions);
 leftSideDOF = convertNode2Dof(sideNodes2(4,:),nDimensions);
+leftSideDOF = leftSideDOF(1:2:end);
+T = eye(nTotalDof-nConstraints,nTotalDof-nConstraints);
+% n = 1;
+% for i = rightSideDOF(1:2:end)-1
+%     aux = T(1:i,:);
+%     row = zeros(1,nTotalDof-nConstraints);
+%     row(1,leftSideDOF(n)) = 1 + interferencia;
+%     n = n + 1;
+%     last = T(i+1:end,:);
+%     T = [aux;row;last];
+%     iPrev = i;
+% end
 n = 1;
-for i = 1:2:length(rightSideDOF)
-    C(n,rightSideDOF(i)) = 1;
-    C(n,leftSideDOF(i)) = -1;
+leftSideDOF = [19 rightSideDOF(2:2:end)];
+for i = rightSideDOF(1:2:end)-1
+    aux = T(1:i,:);
+    row = zeros(1,nTotalDof-nConstraints);
+    row(1,leftSideDOF(n)) = 1 ;
     n = n + 1;
+    last = T(i+1:end,:);
+    T = [aux;row;last];
+    iPrev = i;
 end
+isCondensed = ismember(1:nTotalDof,rightSideDOF(1:2:end));
+isReleased = ~isCondensed;
 
 % Stiffness calculation and assembly
 [stiffnessMatrix]=assembleStiffnessMatrix(elementType,elements,nodes,constitutiveMatrix);
 
-K = [stiffnessMatrix C'
-    C zeros(nConstraints,nConstraints)];
+Kr = T'*stiffnessMatrix*T;
 
 % Matrix reduction
 isFixed = reshape(boundaryConditionsArray',1,[])';
-isFixed((end+1):(end+nConstraints)) = true;
 isFree = ~isFixed;
 
 % Loads Vector rearrangement
 loadsVector = reshape(pointLoadsArray',1,[])';
-loadsVector((end+1):(end+nConstraints)) = 0; % interferencia????
-
+Rr = T'*loadsVector;
 
 % Equation solving
-displacementsReducedVector = K(isFree,isFree)\loadsVector(isFree);
+displacementsReducedVector = Kr(isFree(isReleased),isFree(isReleased))\Rr(isFree(isReleased));
 
 % Reconstruction
-displacementsVector = zeros(nTotalDof,1);
-displacementsVector(isFree) = displacementsVector(isFree) + displacementsReducedVector;
-lagrangeMultipliers = displacementsReducedVector(end-nConstraints+1:end);
+Dr = zeros(nTotalDof-nConstraints,1);
+Dr(isFree(isReleased)) = Dr(isFree(isReleased)) + displacementsReducedVector;
+% lagrangeMultipliers = displacementsReducedVector(end-nConstraints+1:end);
+displacementsVector = T*Dr;
 
 %% Postprocess
 %Stress recovery
@@ -93,7 +108,7 @@ lagrangeMultipliers = displacementsReducedVector(end-nConstraints+1:end);
 % las tensiones extrapoladas son mas parecidas a las de NX
 
 %% RESULT PLOTS
-magnificationFactor=1;
+magnificationFactor=10;
 
 % Deformed plot
 figure

@@ -12,7 +12,7 @@ nElementsZ = 2; nElementsR = 2; distorsion = 0;
 
 elementType='Q4';          %'CST' 'LST' 'Q4' 'Q8' 'Q9'
 problemType='Axisymmetric';       %'Stress' 'Strain' 'Axisymmetric'
-nDimensions=2;              %Problem dimension
+nDimensions=2;              % Problem dimension
 
 [elements1,nodes1,vertexNodes1,sideNodes]=quadrilateralDomainMeshGenerator_catedra(elementType,'Straight',b-a,h,nElementsR,nElementsZ,0,distorsion);
 nodes1(:,1) = nodes1(:,1) + a;
