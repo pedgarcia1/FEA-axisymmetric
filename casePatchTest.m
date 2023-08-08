@@ -4,8 +4,8 @@ set(0,'DefaultFigureWindowStyle','docked')
 
 E = 200e3; nu = 0.3;
 pressureNormal = 100;
-a = 1; b = 2; c = 3; h = 1;
-interferencia = 0.4;
+a = 300; b = a + 101.1; c = b + 74.1; h = 500;
+interferencia = 5;
 nElementsZ = 2; nElementsR = 2; distorsion = 0;
 
 %% Preprocess
@@ -22,7 +22,6 @@ sideNodes2 = sideNodes2 + size(nodes1,1);
 nodes2(:,1) = nodes2(:,1) + b - interferencia;
 elements = [elements1;elements2+size(nodes1,1)];
 nodes = [nodes1;nodes2];
-
 
 % Mesh plot
 figure; meshPlot(elements,nodes,'b','Yes');
@@ -54,12 +53,12 @@ pointLoadsArray = distributedLoad_3(elementType,Lside,pointLoadsArray,nodes,pres
 % Constraints
 % sideNodes1(2,:) - sideNodes2(4,:) = intereferencia
 C = zeros(nConstraints,nTotalDof);
-rightSideNodes = convertNode2Dof(sideNodes(2,:),nDimensions);
-leftSideNodes = convertNode2Dof(sideNodes2(4,:),nDimensions);
+rightSideDOF = convertNode2Dof(sideNodes(2,:),nDimensions);
+leftSideDOF = convertNode2Dof(sideNodes2(4,:),nDimensions);
 n = 1;
-for i = 1:2:length(rightSideNodes)
-    C(n,rightSideNodes(i)) = 1;
-    C(n,leftSideNodes(i)) = -1;
+for i = 1:2:length(rightSideDOF)
+    C(n,rightSideDOF(i)) = 1;
+    C(n,leftSideDOF(i)) = -1;
     n = n + 1;
 end
 
@@ -71,12 +70,12 @@ K = [stiffnessMatrix C'
 
 % Matrix reduction
 isFixed = reshape(boundaryConditionsArray',1,[])';
-isFixed((end+1):(end+nConstraints)) = 0;
+isFixed((end+1):(end+nConstraints)) = true;
 isFree = ~isFixed;
 
 % Loads Vector rearrangement
 loadsVector = reshape(pointLoadsArray',1,[])';
-loadsVector((end+1):(end+nConstraints)) = interferencia;
+loadsVector((end+1):(end+nConstraints)) = 0; % interferencia????
 
 
 % Equation solving
@@ -84,8 +83,8 @@ displacementsReducedVector = K(isFree,isFree)\loadsVector(isFree);
 
 % Reconstruction
 displacementsVector = zeros(nTotalDof,1);
-displacementsVector(isFree(1:end-nConstraints)) = displacementsVector(isFree(1:end-nConstraints)) + displacementsReducedVector(1:end-nConstraints);
-lagrangeMultipliers = displacementsReducedVector(end-nConstraints+1:end);
+displacementsVector(isFree) = displacementsVector(isFree) + displacementsReducedVector;
+% lagrangeMultipliers = displacementsReducedVector(end-nConstraints+1:end);
 
 %% Postprocess
 %Stress recovery
