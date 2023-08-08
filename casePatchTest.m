@@ -6,7 +6,7 @@ E = 200e3; nu = 0.3;
 pressureNormal = 100;
 a = 1; b = 2; c = 3; h = 1;
 interferencia = 0.4;
-nElementsZ = 10; nElementsR = 10; distorsion = 0;
+nElementsZ = 2; nElementsR = 2; distorsion = 0;
 
 %% Preprocess
 
@@ -14,21 +14,23 @@ elementType='Q4';          %'CST' 'LST' 'Q4' 'Q8' 'Q9'
 problemType='Axisymmetric';       %'Stress' 'Strain' 'Axisymmetric'
 nDimensions=2;              %Problem dimension
 
-[elements1,nodes1,vertexNodes1,sideNodes1]=quadrilateralDomainMeshGenerator_catedra(elementType,'Straight',b-a,h,nElementsR,nElementsZ,0,distorsion);
+[elements1,nodes1,vertexNodes1,sideNodes]=quadrilateralDomainMeshGenerator_catedra(elementType,'Straight',b-a,h,nElementsR,nElementsZ,0,distorsion);
 nodes1(:,1) = nodes1(:,1) + a;
 [elements2,nodes2,vertexNodes2,sideNodes2] = quadrilateralDomainMeshGenerator(elementType,'Straight',c-b,h,nElementsR,nElementsZ,0,distorsion);
 vertexNodes2 = vertexNodes2 + size(elements1,1); 
-sideNodes2 = sideNodes2 + size(elements1,1);
+sideNodes2 = sideNodes2 + size(nodes1,1);
 nodes2(:,1) = nodes2(:,1) + b - interferencia;
-elements = [elements1;elements2];
+elements = [elements1;elements2+size(nodes1,1)];
 nodes = [nodes1;nodes2];
 
+
 % Mesh plot
-figure; meshPlot(elements2,nodes2,'b','Yes'); drawnow;
+figure; meshPlot(elements,nodes,'b','Yes');
 
 nElements=size(elements,1);    %Number of elements
 nNodes=size(nodes,1);      %Number of nodes
 nTotalDof=nNodes*nDimensions;           %Number of total dofs
+nConstraints = length(sideNodes(2,:));
 
 % Material properties
 [constitutiveMatrix] = constitutiveIsotropicMatrix(problemType,E,nu);
@@ -37,6 +39,8 @@ nTotalDof=nNodes*nDimensions;           %Number of total dofs
 boundaryConditionsArray = false(nNodes,nDimensions);    % Boundary conditions array true=fixed
 boundaryConditionsArray(sideNodes(1,:),2)=true;
 boundaryConditionsArray(sideNodes(3,:),2)=true;
+boundaryConditionsArray(sideNodes2(1,:),2)=true;
+boundaryConditionsArray(sideNodes2(3,:),2)=true;
 
 % Load definition
 pointLoadsArray = zeros(nNodes,nDimensions);            % Point load nodal value for each direction
@@ -47,25 +51,41 @@ pointLoadsArray = distributedLoad_3(elementType,Lside,pointLoadsArray,nodes,pres
 
 %% Solver
 
+% Constraints
+% sideNodes1(2,:) - sideNodes2(4,:) = intereferencia
+C = zeros(nConstraints,nTotalDof);
+rightSideNodes = convertNode2Dof(sideNodes(2,:),nDimensions);
+leftSideNodes = convertNode2Dof(sideNodes2(4,:),nDimensions);
+n = 1;
+for i = 1:2:length(rightSideNodes)
+    C(n,rightSideNodes(i)) = 1;
+    C(n,leftSideNodes(i)) = -1;
+    n = n + 1;
+end
+
 % Stiffness calculation and assembly
 [stiffnessMatrix]=assembleStiffnessMatrix(elementType,elements,nodes,constitutiveMatrix);
 
-% Constraints
-% sideNodes1(2,:) - sideNodes2(4,:) = intereferencia
+K = [stiffnessMatrix C'
+    C zeros(nConstraints,nConstraints)];
 
 % Matrix reduction
 isFixed = reshape(boundaryConditionsArray',1,[])';
+isFixed((end+1):(end+nConstraints)) = 0;
 isFree = ~isFixed;
 
 % Loads Vector rearrangement
 loadsVector = reshape(pointLoadsArray',1,[])';
+loadsVector((end+1):(end+nConstraints)) = interferencia;
+
 
 % Equation solving
-displacementsReducedVector = stiffnessMatrix(isFree,isFree)\loadsVector(isFree);
+displacementsReducedVector = K(isFree,isFree)\loadsVector(isFree);
 
 % Reconstruction
 displacementsVector = zeros(nTotalDof,1);
-displacementsVector(isFree) = displacementsVector(isFree) + displacementsReducedVector;
+displacementsVector(isFree(1:end-nConstraints)) = displacementsVector(isFree(1:end-nConstraints)) + displacementsReducedVector(1:end-nConstraints);
+lagrangeMultipliers = displacementsReducedVector(end-nConstraints+1:end);
 
 %% Postprocess
 %Stress recovery
@@ -74,7 +94,7 @@ displacementsVector(isFree) = displacementsVector(isFree) + displacementsReduced
 % las tensiones extrapoladas son mas parecidas a las de NX
 
 %% RESULT PLOTS
-magnificationFactor=10;
+magnificationFactor=1;
 
 % Deformed plot
 figure
