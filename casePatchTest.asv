@@ -4,8 +4,8 @@ set(0,'DefaultFigureWindowStyle','docked')
 
 E = 200e3; nu = 0.3;
 pressureNormal = 100;
-a = 1; b = 2; c = 3; h = 1;
-interferencia = 0.4;
+a = 1; b = 2; 
+interferencia = 0;
 nElementsZ = 10; nElementsR = 10; distorsion = 0;
 
 %% Preprocess
@@ -14,17 +14,15 @@ elementType='Q4';          %'CST' 'LST' 'Q4' 'Q8' 'Q9'
 problemType='Axisymmetric';       %'Stress' 'Strain' 'Axisymmetric'
 nDimensions=2;              %Problem dimension
 
-[elements1,nodes1,vertexNodes1,sideNodes1]=quadrilateralDomainMeshGenerator_catedra(elementType,'Straight',b-a,h,nElementsR,nElementsZ,0,distorsion);
+[elements1,nodes1,vertexNodes,sideNodes]=quadrilateralDomainMeshGenerator_catedra(elementType,'Straight',a,b-a,nElementsR,nElementsZ,0,distorsion);
 nodes1(:,1) = nodes1(:,1) + a;
-[elements2,nodes2,vertexNodes2,sideNodes2] = quadrilateralDomainMeshGenerator(elementType,'Straight',c-b,h,nElementsR,nElementsZ,0,distorsion);
-vertexNodes2 = vertexNodes2 + size(elements1,1); 
-sideNodes2 = sideNodes2 + size(elements1,1);
-nodes2(:,1) = nodes2(:,1) + b - interferencia;
-elements = [elements1;elements2];
-nodes = [nodes1;nodes2];
+[elements2,nodes2,~,~] = quadrilateralDomainMeshGenerator(elementType,'Straight',b,c-b,nElementsR,nElementsZ,0,distorsion);
+
 
 % Mesh plot
-figure; meshPlot(elements2,nodes2,'b','Yes'); drawnow;
+figure
+meshPlot(elements,nodes,'b','No');
+drawnow
 
 nElements=size(elements,1);    %Number of elements
 nNodes=size(nodes,1);      %Number of nodes
@@ -49,9 +47,6 @@ pointLoadsArray = distributedLoad_3(elementType,Lside,pointLoadsArray,nodes,pres
 
 % Stiffness calculation and assembly
 [stiffnessMatrix]=assembleStiffnessMatrix(elementType,elements,nodes,constitutiveMatrix);
-
-% Constraints
-% sideNodes1(2,:) - sideNodes2(4,:) = intereferencia
 
 % Matrix reduction
 isFixed = reshape(boundaryConditionsArray',1,[])';
