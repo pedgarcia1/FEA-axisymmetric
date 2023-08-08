@@ -1,0 +1,197 @@
+function [elementStressAtGaussPoints]=stressRecovery(elementType,elementNodesArray,nodesPositionArray,constitutiveMatrix,nodalDisplacements)
+% Stress recovery from displacements
+% 
+% [elementStressAtNodes]=stressRecovery(elementType,elementNodesArray,nodesPositionArray,constitutiveMatrix,displacements)
+%
+% elementStressAtNodes:      Element stresses at element nodes
+%
+% elementType:          Type of element 'CST' LST' 'Q4' 'Q8' 'Q9'
+% nodesPositionArray:   Nodal position in cartesian coordinates
+% elementNodesArray:    Element conectivity matrix
+% constitutiveMatrix:   Constitutive Matrix
+%
+
+%% Definitions
+switch elementType
+    case 'CST'
+        nDimensions = 2;                                %Problem dimension
+        naturalNodalCoordinates=[0 0
+                                 1 0
+                                 0 1];
+    case 'LST'
+        nDimensions = 2;                                %Problem dimension
+        naturalNodalCoordinates=[0   0
+                                 1   0
+                                 0   1
+                                 0.5 0
+                                 0.5 0.5
+                                 0   1];
+    case 'Q4'
+        nDimensions = 2;                                %Problem dimension
+        naturalNodalCoordinates = [-1 -1
+                                    1 -1
+                                    1  1
+                                   -1  1];
+    case 'Q8'
+        nDimensions = 2;                                %Problem dimension
+        naturalNodalCoordinates = [-1 -1
+                                    1 -1
+                                    1  1
+                                   -1  1
+                                    0 -1
+                                    1  0
+                                    0  1
+                                   -1  0];
+    case 'Q9'
+        nDimensions = 2;                                %Problem dimension
+        naturalNodalCoordinates = [-1 -1
+                                    1 -1
+                                    1  1
+                                   -1  1
+                                    0 -1
+                                    1  0
+                                    0  1
+                                   -1  0
+                                    0  0];
+end
+
+nElements=size(elementNodesArray,1);            %Number of elements
+
+nNodes=size(nodesPositionArray,1);              %Number of nodes
+nElementalNodes = size(elementNodesArray,2);    %Number of node in each element
+nElementalDof = nDimensions*nElementalNodes;    %Number of elemental Dofs
+
+nTotalDof = nDimensions*nNodes;                 %Number of node in each element
+
+nPoints = size(naturalNodalCoordinates,1);      %Number of points to get stress
+
+
+%% Stress recovery
+
+rsInt = 2*ones(1,2);
+[wpg, upg, npg] = gauss(rsInt);
+% Funciones de forma y derivadas
+Ni = shapefuns(upg,elementType);
+
+% Shape functions derivatives at every point in natural coordinates
+shapeFunctionsDerivatives = getShapeFunctionsDerivatives(naturalNodalCoordinates,elementType);
+
+elementStressAtGaussPoints=zeros(nElements,nPoints,4);
+
+for iElement = 1:nElements
+    
+    elementalDofs = convertNode2Dof(elementNodesArray(iElement,:),nDimensions);
+    elementalNodesPosition = nodesPositionArray(elementNodesArray(iElement,:),:);
+
+    for iPoint = 1:nPoints
+        
+        % Jacobian calculation at Gauss point
+        jacobian = shapeFunctionsDerivatives(:,:,iPoint)*elementalNodesPosition;
+        jacobianDeterminant=det(jacobian);
+        
+        assert(jacobianDeterminant>0,'det neg')
+
+        r = Ni(:,:,iPoint)*elementalNodesPosition(:,1);
+        
+       
+        % Shape functions derivatives in structural coordinates
+        structuralShapeFunctionsDerivatives = jacobian\shapeFunctionsDerivatives(:,:,iPoint);
+        
+        B = zeros(size(constitutiveMatrix,1),nElementalDof);
+        
+        
+        B(1,1:2:nElementalDof-1) = structuralShapeFunctionsDerivatives(1,:);
+        
+        B(2,1:2:nElementalDof-1) = Ni(:,:,iPoint)/r;
+        
+        B(3,2:2:nElementalDof) = structuralShapeFunctionsDerivatives(2,:);
+        
+        B(4,1:2:nElementalDof-1) = structuralShapeFunctionsDerivatives(2,:);
+        B(4,2:2:nElementalDof) = structuralShapeFunctionsDerivatives(1,:);
+        
+        B(1,1:2:7) = dNxy(1,:);
+        B(2,1:2:7) = Ni(:,:,ipg)/r;
+        B(3,2:2:8) = dNxy(2,:);
+        B(4,1:2:7) = dNxy(2,:);
+        B(4,2:2:8) = dNxy(1,:);  
+      
+        elementStressAtGaussPoints(iElement,iPoint,:) = constitutiveMatrix*B*nodalDisplacements(elementalDofs);
+    end
+end
+
+%% Extrapolamos tensiones a los nodos 
+ 
+%   for iElement = 1:nElements
+%       for iPoint = 1:nPoints
+%           
+%           ksi  = unodNodal(ipg,1);
+%           eta  = unodNodal(ipg,2);
+%           zeta = unodNodal(ipg,3);
+%           
+%           % Funciones de forma
+%           N = [ (1-ksi)*(1-eta)*(1+zeta)/8, (1-ksi)*(1-eta)*(1-zeta)/8, (1-ksi)*(1+eta)*(1-zeta)/8....
+%               (1-ksi)*(1+eta)*(1+zeta)/8, (1+ksi)*(1-eta)*(1+zeta)/8, (1+ksi)*(1-eta)*(1-zeta)/8....
+%               (1+ksi)*(1+eta)*(1-zeta)/8, (1+ksi)*(1+eta)*(1+zeta)/8 ];
+%           
+%           N = N(1,[8,4,1,5,7,3,2,6]);
+%           % Extrapolacion de puntos de gauss a nodos.
+%           tensionEfectivaNodal(iele,ipg,1) = N*tensionEfectiva(iele,:,1)';
+%           tensionEfectivaNodal(iele,ipg,2) = N*tensionEfectiva(iele,:,2)';
+%           tensionEfectivaNodal(iele,ipg,3) = N*tensionEfectiva(iele,:,3)';
+%           tensionEfectivaNodal(iele,ipg,4) = N*tensionEfectiva(iele,:,4)';
+%           tensionEfectivaNodal(iele,ipg,5) = N*tensionEfectiva(iele,:,5)';
+%           tensionEfectivaNodal(iele,ipg,6) = N*tensionEfectiva(iele,:,6)';
+%       end
+%   end
+
+    %% Extrapolacion
+PuntosExtrapol = sqrt(3)*[-1  -1;
+                            1 -1;
+                             1 1;
+                            -1 1];
+
+stressExtra = zeros(nElements,nPoints,4);
+for iElements = 1:nElements
+    for iPoints = 1:nPoints
+        r = PuntosExtrapol(iPoints,1);
+        s = PuntosExtrapol(iPoints,2);
+        
+            N4 = 0.25*(1 - r)*(1 + s);
+            N3 = 0.25*(1 + r)*(1 + s);
+            N2 = 0.25*(1 + r)*(1 - s);
+            N1 = 0.25*(1 - r)*(1 - s);
+            N = [N1 N2 N3 N4];
+        
+        stressExtra(iElements,iPoints,:) = N * squeeze(elementStressAtGaussPoints(iElements,:,:));
+    end
+end   
+    
+    
+%% plot extrapoladas
+if 0
+    figure;
+    subplot(1,4,1); title('Tensiones Extrapoladas a los nodos')
+    plotColo(nodesPositionArray,elementNodesArray,stressExtra(:,:,1)); axis equal
+    subplot(1,4,2)
+    plotColo(nodesPositionArray,elementNodesArray,stressExtra(:,:,2)); axis equal
+    subplot(1,4,3)
+    plotColo(nodesPositionArray,elementNodesArray,stressExtra(:,:,3)); axis equal
+    subplot(1,4,4)
+    plotColo(nodesPositionArray,elementNodesArray,stressExtra(:,:,4)); axis equal
+end
+%% Plot gaussP
+if 0
+figure; 
+subplot(1,4,1); title('Tensiones en Puntos de Gauss')
+plotColo(nodesPositionArray,elementNodesArray,elementStressAtGaussPoints(:,:,1)); axis equal
+subplot(1,4,2)
+plotColo(nodesPositionArray,elementNodesArray,elementStressAtGaussPoints(:,:,2)); axis equal
+subplot(1,4,3)
+plotColo(nodesPositionArray,elementNodesArray,elementStressAtGaussPoints(:,:,3)); axis equal
+subplot(1,4,4)
+plotColo(nodesPositionArray,elementNodesArray,elementStressAtGaussPoints(:,:,4)); axis equal
+end
+
+
+
+
