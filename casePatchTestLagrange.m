@@ -5,7 +5,7 @@ set(0,'DefaultFigureWindowStyle','docked')
 E = 200e3; nu = 0.3;
 pressureNormal = 100;
 a = 300; b = a + 101.1; c = b + 74.1; h = 500;
-interferencia = 5; precond = 1e7;
+interferencia = 0.6636; precond = 1e7;
 nElementsZ = 20; nElementsR = 20; distorsion = 0;
 
 %% Preprocess
@@ -112,12 +112,12 @@ meshPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensi
 bandPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,nNodes)',squeeze(elementStressExtrapolated(:,:,1)));
 title('Tensiones extrapoladas desde los ptos. de Gauss [Mpa]')
 
-% Sxx = squeeze(elementStressAtNodes(:,:,1))'; Syy = squeeze(elementStressAtNodes(:,:,2))'; Szz = squeeze(elementStressAtNodes(:,:,3))'; Szx = squeeze(elementStressAtNodes(:,:,4))';
-% vonMisesStress = 1/sqrt(2)*sqrt( (Sxx-Syy).^2 + (Syy-Szz).^2 + (Szz-Sxx).^2 + 6*Szx.^2 );
-% figure
-% meshPlot(elementNodesArray,nodesPositionArray+magnificationFactor*reshape(displacementsVector,nDimensions,nNodes)','b','No');
-% bandPlot(elementNodesArray,nodesPositionArray+magnificationFactor*reshape(displacementsVector,nDimensions,nNodes)',vonMisesStress);
-% title('VM [Mpa]')
+Sxx = squeeze(elementStressExtrapolated(:,:,1))'; Syy = squeeze(elementStressExtrapolated(:,:,2))'; Szz = squeeze(elementStressExtrapolated(:,:,3))'; Szx = squeeze(elementStressExtrapolated(:,:,4))';
+vonMisesStress = transpose(1/sqrt(2)*sqrt( (Sxx-Syy).^2 + (Syy-Szz).^2 + (Szz-Sxx).^2 + 6*Szx.^2 ));
+figure
+meshPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,nNodes)','b','No');
+bandPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,nNodes)',vonMisesStress);
+title('VM [Mpa]')
 
 % Displacement Matrix
 displacementsMatrix = reshape(displacementsVector,nDimensions,nNodes)';  %mm

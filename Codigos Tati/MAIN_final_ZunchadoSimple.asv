@@ -10,7 +10,7 @@ interferencia=0.6636;
 
 
 nElemEnX=20;
-nElemEnXOut=20;
+nElemEnXOut=10;
 nElemEnY=20;
 AlturaY=500;
 
@@ -260,27 +260,3 @@ for iElements=1:nElements2
     scatter(meshInfoOut.nodes(meshInfoOut.elements(iElements,:),1),elementStressAtGaussPointsOut(iElements,:,2))
 end
 plot(LargoXIn+radio:0.1:LargoXOut+LargoXIn+radio,sigmaTitaOut(LargoXIn+radio:0.1:LargoXOut+LargoXIn+radio),'r');
-
-%% comparamos desplazamientos
-
-u= @(a,b,pInt,pOut,r) ((1-poisson)/E).* C1(a,b,pInt,pOut) .* r + ((1+poisson)/E).*  C2(a,b,pInt,pOut) ./r;
-
-% desplazamientos IN
-figure;subplot(1,2,1);hold on; title('Comparativa desplazamiento IN')
-
-u1=reshape(displacementsVector(1:nNodes1*2),nDimensions,nNodes1)';
-
-for iElementsIn=1:nElements1
-    scatter(meshInfo.nodes(meshInfo.elements(iElementsIn,:),1),u1(meshInfo.elements(iElementsIn,:),1))
-end
-plot(radio:0.1:LargoXIn+radio,u(a,b,200,p,radio:0.1:LargoXIn+radio),'r');
-
-% desplazamientos Out
-subplot(1,2,2);hold on; title('Comparativa desplazamiento Out')
-
-u2=reshape(displacementsVector(nNodes1*2+1:end),nDimensions,nNodes2)';
-
-for iElementsOut=1:nElements2
-    scatter(meshInfoOut.nodes(meshInfoOut.elements(iElementsOut,:),1),u2(meshInfoOut.elements(iElementsOut,:),1))
-end
-plot(LargoXIn+radio:0.1:LargoXOut+LargoXIn+radio,u(b,c,p,0,LargoXIn+radio:0.1:LargoXOut+LargoXIn+radio),'r');
