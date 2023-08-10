@@ -4,9 +4,9 @@ keyPlots=0;
 keyPlots2=0;
 
 radio=300;
-LargoXIn=101.1;
-LargoXOut=74.1;
-interferencia=0.6636;
+LargoXIn=69.1;
+LargoXOut=100.1;
+interferencia=0.7427;
 
 
 nElemEnX=20;

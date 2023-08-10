@@ -1,6 +1,6 @@
-function [espesores, D, interferencia, p_i]= RP_2capa_v2(p, sigma_y, FS, a, E, v)
+function [espesores, D, interferencia, p_i]= RP_2capa_v2(tapasFlag,p, sigma_y, FS, a, E, v)
 
-e = 0.1:1:250; 
+e = 0.1:1:500; 
 %Fijo estos espesores. El caso de una capa me dio 49,13, obligatoriamente 
 %voy a estar abajo de eso se supone, sino no tendría sentido la estructura esta
 
@@ -12,7 +12,7 @@ int = zeros(100, length(e));
 %interferencia (filas) y de b (columnas). Si con esos parámetros, no
 %encuentra nada que funcione, usa un -1.
 
-p_int_vec = 0.1:0.1:50; %Mpa
+p_int_vec = 0.1:0.1:100; %Mpa
 for p_int = p_int_vec
     %Voy a ir cubriendo distintas interferencias
     k = 1;
@@ -20,8 +20,14 @@ for p_int = p_int_vec
         c = b+e;
         
 %         sigma_z = p*a^2./(c.^2-a^2); 
-        sigma_z1 = p*a^2./(b.^2-a^2); 
-        sigma_z2 = p*a^2./(c.^2-b^2); 
+        
+        if tapasFlag
+            sigma_z1 = p*a^2./(b.^2-a^2); 
+            sigma_z2 = p*a^2./(c.^2-b^2); 
+        else 
+            sigma_z1 = 0;
+            sigma_z2 = 0;
+        end
         
         %Las tensiones se analizan por superposición. El 1 es el cilindro
         %interno y el 2 el externo. Cada uno se ve afectado por la presión

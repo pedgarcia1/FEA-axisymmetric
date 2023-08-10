@@ -4,8 +4,8 @@ set(0,'DefaultFigureWindowStyle','docked')
 
 E = 200e3; nu = 0.3;
 pressureNormal = 100;
-a = 300; b = a + 101.1; c = b + 74.1; h = 500;
-interferencia = 0.6636; precond = 1e7;
+a = 300; b = a + 69.1; c = b + 100.1; h = 500;
+interferencia = 0.7427; precond = 1e7;
 nElementsZ = 20; nElementsR = 20; distorsion = 0;
 
 %% Preprocess
