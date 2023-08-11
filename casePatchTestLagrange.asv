@@ -1,6 +1,5 @@
 %% Case launcher
-clear; close all; 
-set(0,'DefaultFigureWindowStyle','docked')
+clear; close all; set(0,'DefaultFigureWindowStyle','docked');
 
 E = 200e3; nu = 0.3;
 pressureNormal = 0;
@@ -18,7 +17,7 @@ nDimensions=2;              % Problem dimension
 [elements1,nodes1,vertexNodes1,sideNodes]=quadrilateralDomainMeshGenerator_catedra(elementType,'Straight',b-a,h,nElementsR,nElementsZ,0,distorsion);
 nodes1(:,1) = nodes1(:,1) + a;
 [elements2,nodes2,vertexNodes2,sideNodes2] = quadrilateralDomainMeshGenerator(elementType,'Straight',c-b,h,nElementsR,nElementsZ,0,distorsion);
-nNodes1 = size(elements1,1); nElements1 = size(elements1,1);
+nNodes1 = size(nodes1,1); nElements1 = size(elements1,1); nNodes2 = size(nodes2,1);
 vertexNodes2 = vertexNodes2 + nNodes1; 
 sideNodes2 = sideNodes2 + size(nodes1,1);
 nodes2(:,1) = nodes2(:,1) + b - interferencia ;
@@ -38,10 +37,17 @@ nConstraints = length(sideNodes(2,:));
 
 % Boundary conditions
 boundaryConditionsArray = false(nNodes,nDimensions);    % Boundary conditions array true=fixed
-boundaryConditionsArray(sideNodes(1,:),2)=true;
-boundaryConditionsArray(sideNodes(3,:),2)=true;
-boundaryConditionsArray(sideNodes2(1,:),2)=true;
-boundaryConditionsArray(sideNodes2(3,:),2)=true;
+if planeStrainFlag
+    boundaryConditionsArray(sideNodes(1,:),2)=true;
+    boundaryConditionsArray(sideNodes(3,:),2)=true;
+    boundaryConditionsArray(sideNodes2(1,:),2)=true;
+    boundaryConditionsArray(sideNodes2(3,:),2)=true;
+else
+    boundaryConditionsArray(sideNodes(1,:),2)=true;
+%     boundaryConditionsArray(sideNodes(3,:),2)=true;
+    boundaryConditionsArray(sideNodes2(1,:),2)=true;
+%     boundaryConditionsArray(sideNodes2(3,:),2)=true;
+end
 
 % Load definition
 pointLoadsArray = zeros(nNodes,nDimensions);            % Point load nodal value for each direction
@@ -106,24 +112,24 @@ else
     fprintf("Caso plane stress \n")
 end
 
-p=(E*interferencia/b) * (b^2-a^2)*(c^2-b^2) / (2*b^2*(c^2-a^2));
+pInterferencia=(E*interferencia/b) * (b^2-a^2)*(c^2-b^2) / (2*b^2*(c^2-a^2));
 
 C1= @(a,b,pInt,pOut) (a^2*pInt-b^2*pOut)/(b^2-a^2);
 C2= @(a,b,pInt,pOut) (pInt-pOut)*a^2*b^2/(b^2-a^2);
 
-sigmaR1=@(r)    C1(a,b,pressureNormal,p)-C2(a,b,pressureNormal,p)./r.^2;
-sigmaTita1=@(r) C1(a,b,pressureNormal,p)+C2(a,b,pressureNormal,p)./r.^2;
+sigmaR1=@(r)    C1(a,b,pressureNormal,pInterferencia)-C2(a,b,pressureNormal,pInterferencia)./r.^2;
+sigmaTita1=@(r) C1(a,b,pressureNormal,pInterferencia)+C2(a,b,pressureNormal,pInterferencia)./r.^2;
 
-sigmaR2=@(r)    C1(b,c,p,0)-C2(b,c,p,0)./r.^2;
-sigmaTita2=@(r) C1(b,c,p,0)+C2(b,c,p,0)./r.^2;
+sigmaR2=@(r)    C1(b,c,pInterferencia,0)-C2(b,c,pInterferencia,0)./r.^2;
+sigmaTita2=@(r) C1(b,c,pInterferencia,0)+C2(b,c,pInterferencia,0)./r.^2;
 
-figure; subplot(1,2,1); hold on; title('Srr')
+figure; subplot(1,2,1); hold on; title('Srr'); grid
 for iElements=1:nElements
     scatter(nodes(elements(iElements,:),1),elementStressAtGaussPoints(iElements,:,1))
 end
 plot(a:0.1:b,sigmaR1(a:0.1:b),'r',b:0.1:c,sigmaR2(b:0.1:c),'b')
 
-subplot(1,2,2); hold on; title('Stita')
+subplot(1,2,2); hold on; title('Stita'); grid
 for iElements=1:nElements
     scatter(nodes(elements(iElements,:),1),elementStressAtGaussPoints(iElements,:,2))
 end
@@ -131,11 +137,11 @@ plot(a:0.1:b,sigmaTita1(a:0.1:b),'r',b:0.1:c,sigmaTita2(b:0.1:c),'b')
 
 uTeorico= @(a,b,pInt,pOut,r) ((1-nu)/E).* C1(a,b,pInt,pOut) .* r + ((1+nu)/E).*  C2(a,b,pInt,pOut) ./r;
 
-figure; hold on; title('u')
+figure; hold on; title('u'); grid
 for iElements=1:nElements
     scatter(nodes(elements(iElements,:),1),displacementsMatrix(elements(iElements,:),1))
 end
-plot(a:0.1:b,uTeorico(a,b,pressureNormal,p,a:0.1:b),'r',b:0.1:c,uTeorico(b,c,p,0,b:0.1:c),'b')
+plot(a:0.1:b,uTeorico(a,b,pressureNormal,pInterferencia,a:0.1:b),'r',b:0.1:c,uTeorico(b,c,pInterferencia,0,b:0.1:c),'b')
 
 % Deformed plot
 figure
@@ -147,22 +153,16 @@ meshPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensi
 % meshPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,nNodes)','b','No');
 % bandPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,nNodes)',squeeze(elementStressAtGaussPoints(:,:,1)));
 % title('Sxx en los nodos [Mpa]')
-% 
-% figure
-% meshPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,nNodes)','b','No');
-% bandPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,nNodes)',squeeze(elementStressExtrapolated(:,:,1)));
-% title('Sxx extrapoladas desde los ptos. de Gauss [Mpa]')
-% 
-% figure
-% meshPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,nNodes)','b','No');
-% bandPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,nNodes)',squeeze(elementStressExtrapolated(:,:,3)));
-% title('Szz extrapoladas desde los ptos. de Gauss [Mpa]')
-
 
 Sxx = squeeze(elementStressExtrapolated(:,:,1))'; Syy = squeeze(elementStressExtrapolated(:,:,2))'; Szz = squeeze(elementStressExtrapolated(:,:,3))'; Szx = squeeze(elementStressExtrapolated(:,:,4))';
 vonMisesStress = transpose(1/sqrt(2)*sqrt( (Sxx-Syy).^2 + (Syy-Szz).^2 + (Szz-Sxx).^2 + 6*Szx.^2 ));
-figure
-meshPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,nNodes)','b','No');
-bandPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,nNodes)',vonMisesStress);
-title('VM [Mpa]')
+figure; subplot(1,2,1); title('Int Svm [Mpa]')
+meshPlot(elements1,nodes1+magnificationFactor*reshape(displacementsVector(convertNode2Dof(1:nNodes1,nDimensions)),nDimensions,[])','b','No');
+bandPlot(elements1,nodes1+magnificationFactor*reshape(displacementsVector(convertNode2Dof(1:nNodes1,nDimensions)),nDimensions,[])',vonMisesStress);
+ subplot(1,2,2); title('Interior Svm [Mpa]')
+meshPlot(elements2,nodes2+magnificationFactor*reshape(displacementsVector(convertNode2Dof(1:nNodes1,nDimensions)),nDimensions,[])','b','No');
+bandPlot(elements2,nodes2+magnificationFactor*reshape(displacementsVector(convertNode2Dof(nNodes1:nNodes2,nDimensions)),nDimensions,[])',vonMisesStress);
+
+
+
 
