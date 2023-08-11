@@ -19,16 +19,6 @@ for p_int = p_int_vec
     for b = a+e %Recorro los distintos valores de b posibles
         c = b+e;
         
-%         sigma_z = p*a^2./(c.^2-a^2); 
-        
-        if tapasFlag
-            sigma_z1 = p*a^2./(b.^2-a^2); 
-            sigma_z2 = p*a^2./(c.^2-b^2); 
-        else 
-            sigma_z1 = 0;
-            sigma_z2 = 0;
-        end
-        
         %Las tensiones se analizan por superposición. El 1 es el cilindro
         %interno y el 2 el externo. Cada uno se ve afectado por la presión
         %de interferencia de su manera correspondiente, y también como un
@@ -46,6 +36,16 @@ for p_int = p_int_vec
 %         sigma_tita2 = (p./(c.^2-a^2)).*(a^2 + (a^2*c.^2)/b^2)+(p_int./(c.^2-b^2)).*(b^2+c.^2);
 %         sigma_tita2 = (p./(c.^2-b.^2)).*(b.^2 + (a.^2*c.^2)/b^2)+(p_int./(c.^2-b^2)).*(b.^2+c.^2);
         sigma_tita2 = p_int.*(b.^2 + c.^2)./(c.^2 - b.^2);
+
+%       sigma_z = p*a^2./(c.^2-a^2); 
+        
+        if tapasFlag
+            sigma_z1 = p*a^2./(b.^2-a^2); 
+            sigma_z2 = p*a^2./(c.^2-b^2); 
+        else 
+            sigma_z1 = v*(sigma_r1+sigma_tita1);
+            sigma_z2 = v*(sigma_r2+sigma_tita2);
+        end
 
 
         %Tresca para ambos tubos

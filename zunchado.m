@@ -16,4 +16,3 @@ u = @(r,a,b,pint,pout) (1-v)/E*(a.^2*pint-b.^2*pout)*r/(b.^2-a.^2) + (1+v)/E*(pi
 
 % r = 300mm interior
 uRa = u(a,a,b,p,p_interferencia)
-% uRa 0.2967
