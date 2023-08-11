@@ -17,7 +17,7 @@ nDimensions=2;              % Problem dimension
 [elements1,nodes1,vertexNodes1,sideNodes]=quadrilateralDomainMeshGenerator_catedra(elementType,'Straight',b-a,h,nElementsR,nElementsZ,0,distorsion);
 nodes1(:,1) = nodes1(:,1) + a;
 [elements2,nodes2,vertexNodes2,sideNodes2] = quadrilateralDomainMeshGenerator(elementType,'Straight',c-b,h,nElementsR,nElementsZ,0,distorsion);
-nNodes1 = size(nodes1,1); nElements1 = size(elements1,1);
+nNodes1 = size(nodes1,1); nElements1 = size(elements1,1); nNodes2 = size(nodes2,1);
 vertexNodes2 = vertexNodes2 + nNodes1; 
 sideNodes2 = sideNodes2 + size(nodes1,1);
 nodes2(:,1) = nodes2(:,1) + b - interferencia ;
@@ -156,8 +156,13 @@ meshPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensi
 
 Sxx = squeeze(elementStressExtrapolated(:,:,1))'; Syy = squeeze(elementStressExtrapolated(:,:,2))'; Szz = squeeze(elementStressExtrapolated(:,:,3))'; Szx = squeeze(elementStressExtrapolated(:,:,4))';
 vonMisesStress = transpose(1/sqrt(2)*sqrt( (Sxx-Syy).^2 + (Syy-Szz).^2 + (Szz-Sxx).^2 + 6*Szx.^2 ));
-figure; subplot(1,2,1);
-meshPlot(elements1,nodes1+magnificationFactor*reshape(displacementsVector(convertNode2Dof(elements1(:,1)',nDimensions)),nDimensions,[])','b','No');
-bandPlot(elements1,nodes1+magnificationFactor*reshape(displacementsVector(convertNode2Dof(elements1(:,1)',nDimensions)),nDimensions,[])',vonMisesStress);
-title('VM [Mpa]')
+figure; subplot(1,2,1); title('Int Svm [Mpa]')
+meshPlot(elements1,nodes1+magnificationFactor*reshape(displacementsVector(convertNode2Dof(1:nNodes1,nDimensions)),nDimensions,[])','b','No');
+bandPlot(elements1,nodes1+magnificationFactor*reshape(displacementsVector(convertNode2Dof(1:nNodes1,nDimensions)),nDimensions,[])',vonMisesStress(1:nNodes1,:));
+ subplot(1,2,2); title('Out Svm [Mpa]')
+meshPlot(elements2,nodes2+magnificationFactor*reshape(displacementsVector(convertNode2Dof(nNodes1+1:nNodes2+nNodes1,nDimensions)),nDimensions,[])','b','No');
+bandPlot(elements2,nodes2+magnificationFactor*reshape(displacementsVector(convertNode2Dof(nNodes1+1:nNodes2+nNodes1,nDimensions)),nDimensions,[])',vonMisesStress(nElements1+1:end,:));
+
+
+
 
