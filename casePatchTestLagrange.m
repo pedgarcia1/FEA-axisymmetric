@@ -2,7 +2,7 @@
 clear; close all; set(0,'DefaultFigureWindowStyle','docked');
 
 E = 200e3; nu = 0.3;
-pressureNormal = 0;
+pressureNormal = 100;
 a = 300; b = a + 64.1; c = b + 97.1; h = 500;
 interferencia = 0.7940; precond = 1e7;
 nElementsZ = 15; nElementsR = 15; distorsion = 0;   
