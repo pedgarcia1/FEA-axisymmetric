@@ -5,7 +5,16 @@ a = 300; %mm
 sigma_y = 250; %Mpa
 p = 100; %Mpa
 FS = 1;
-tapasFlag = 0;
+tapasFlag = 1;
+planeStrainFlag = 0;
+
+if planeStrainFlag
+    E = E/(1-nu^2);
+    nu = nu/(1-nu);
+    fprintf("Caso plane strain \n")
+else
+    fprintf("Caso plane stress \n")
+end
 
 [espesores, D, interferencia, p_interferencia] = RP_2capa_v2(tapasFlag,p, sigma_y, FS, a, E, v)
 b = a + espesores(1);

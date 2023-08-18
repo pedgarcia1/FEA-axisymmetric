@@ -4,9 +4,9 @@ clear; close all; set(0,'DefaultFigureWindowStyle','docked');
 E = 200e3; nu = 0.3;
 pressureNormal = 100;
 a = 300; b = a + 64.1; c = b + 97.1; h = 500;
-interferencia = 0.7940; precond = 1e7;
+interferencia = 0.874; precond = 1e7;
 nElementsZ = 15; nElementsR = 15; distorsion = 0;   
-planeStrainFlag = 1;
+planeStrainFlag = 0;
 
 %% Preprocess
 
@@ -112,7 +112,8 @@ else
     fprintf("Caso plane stress \n")
 end
 
-pInterferencia=(E*interferencia/b) * (b^2-a^2)*(c^2-b^2) / (2*b^2*(c^2-a^2));
+% pInterferencia=(E*interferencia/b) * (b^2-a^2)*(c^2-b^2) / (2*b^2*(c^2-a^2));
+pInterferencia = abs(mean(mean(elementStressAtGaussPoints([90 301],:,1))))
 
 C1= @(a,b,pInt,pOut) (a^2*pInt-b^2*pOut)/(b^2-a^2);
 C2= @(a,b,pInt,pOut) (pInt-pOut)*a^2*b^2/(b^2-a^2);
@@ -151,9 +152,10 @@ meshPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensi
 % % Stresses plot
 % figure
 % meshPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,nNodes)','b','No');
-% bandPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,nNodes)',squeeze(elementStressAtGaussPoints(:,:,1)));
-% title('Sxx en los nodos [Mpa]')
+% bandPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,nNodes)',squeeze(elementStressAtGaussPoints(:,:,3)));
+% title('Szz en los nodos [Mpa]')
 
+% Von Mises Plot
 Sxx = squeeze(elementStressExtrapolated(:,:,1))'; Syy = squeeze(elementStressExtrapolated(:,:,2))'; Szz = squeeze(elementStressExtrapolated(:,:,3))'; Szx = squeeze(elementStressExtrapolated(:,:,4))';
 vonMisesStress = transpose(1/sqrt(2)*sqrt( (Sxx-Syy).^2 + (Syy-Szz).^2 + (Szz-Sxx).^2 + 6*Szx.^2 ));
 figure; subplot(1,2,1); title('Int Svm [Mpa]')
@@ -163,6 +165,14 @@ bandPlot(elements1,nodes1+magnificationFactor*reshape(displacementsVector(conver
 meshPlot(elements2,nodes2+magnificationFactor*reshape(displacementsVector(convertNode2Dof(nNodes1+1:nNodes2+nNodes1,nDimensions)),nDimensions,[])','b','No');
 bandPlot(elements2,nodes2+magnificationFactor*reshape(displacementsVector(convertNode2Dof(nNodes1+1:nNodes2+nNodes1,nDimensions)),nDimensions,[])',vonMisesStress(nElements1+1:end,:));
 
+% Sxx plot
+Sxx = squeeze(elementStressExtrapolated(:,:,1)); 
+figure; subplot(1,2,1); title('Int Sxx [Mpa]')
+meshPlot(elements1,nodes1+magnificationFactor*reshape(displacementsVector(convertNode2Dof(1:nNodes1,nDimensions)),nDimensions,[])','b','No');
+bandPlot(elements1,nodes1+magnificationFactor*reshape(displacementsVector(convertNode2Dof(1:nNodes1,nDimensions)),nDimensions,[])',Sxx(1:nNodes1,:));
+ subplot(1,2,2); title('Out Sxx [Mpa]')
+meshPlot(elements2,nodes2+magnificationFactor*reshape(displacementsVector(convertNode2Dof(nNodes1+1:nNodes2+nNodes1,nDimensions)),nDimensions,[])','b','No');
+bandPlot(elements2,nodes2+magnificationFactor*reshape(displacementsVector(convertNode2Dof(nNodes1+1:nNodes2+nNodes1,nDimensions)),nDimensions,[])',Sxx(nElements1+1:end,:));
 
 
 

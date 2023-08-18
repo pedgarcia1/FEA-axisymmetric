@@ -1,8 +1,6 @@
 function [espesores, D, interferencia, p_i]= RP_2capa_v2(tapasFlag,p, sigma_y, FS, a, E, v)
 
 e = 0.1:1:500; 
-%Fijo estos espesores. El caso de una capa me dio 49,13, obligatoriamente 
-%voy a estar abajo de eso se supone, sino no tendría sentido la estructura esta
 
 i = 1;
 espesor_1 = zeros(100, length(e));
@@ -41,12 +39,11 @@ for p_int = p_int_vec
         
         if tapasFlag
             sigma_z1 = p*a^2./(b.^2-a^2); 
-            sigma_z2 = p*a^2./(c.^2-b^2); 
+            sigma_z2 = 0; 
         else 
             sigma_z1 = v*(sigma_r1+sigma_tita1);
             sigma_z2 = v*(sigma_r2+sigma_tita2);
         end
-
 
         %Tresca para ambos tubos
 %         sigma1 = max([abs(sigma_z-sigma_r1); abs(sigma_z-sigma_tita1); abs(sigma_tita1-sigma_r1)]);
@@ -72,7 +69,8 @@ for p_int = p_int_vec
         if ~isempty(c_min)
             espesor_2(i,k) = c_min - b;
             espesor_1(i,k) = b - a;
-            int(i,k) = p_int/(E*(b^2 - a^2)*(c_min.^2-b^2)/((2-v)*(b^3*(c_min^2-a^2))));
+%             int(i,k) = p_int/(E*(b^2 - a^2)*(c_min.^2-b^2)/((2-v)*(b^3*(c_min^2-a^2))));
+            int(i,k) = 2*b^3*(c_min.^2-a^2)*p_int/(E*(b^2-a^2)*(c_min.^2-b^2));
         else
             espesor_2(i,k) = -1;
             espesor_1(i,k) = -1;
