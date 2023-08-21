@@ -3,8 +3,8 @@ clear; close all; set(0,'DefaultFigureWindowStyle','docked');
 
 E = 200e3; nu = 0.3;
 pressureNormal = 100;
-a = 300; b = a + 64.1; c = b + 97.1; h = 500;
-interferencia = 0.874; precond = 1e7;
+a = 300; b = a + 64.1; c = b + 97.1; h = 1200;
+interferencia = 0.105; precond = 1e7;
 nElementsZ = 15; nElementsR = 15; distorsion = 0;   
 planeStrainFlag = 0;
 
@@ -23,9 +23,11 @@ sideNodes2 = sideNodes2 + size(nodes1,1);
 nodes2(:,1) = nodes2(:,1) + b - interferencia ;
 elements = [elements1;elements2+size(nodes1,1)];
 nodes = [nodes1;nodes2];
+% msh.nodes = nodes;
+% msh.elements = elements;
 
 % Mesh plot
-figure; meshPlot(elements,nodes,'b','Yes');
+figure; meshPlot(elements,nodes,'b','No');
 
 nElements=size(elements,1);    %Number of elements
 nNodes=size(nodes,1);      %Number of nodes
@@ -103,7 +105,7 @@ displacementsVector(isFree) = displacementsVector(isFree) + displacementsReduced
 %% RESULT PLOTS
 magnificationFactor=1;
 displacementsMatrix = reshape(displacementsVector,nDimensions,nNodes)';  %mm
-%% Solucion teorica
+%% Solucion teorica zunchado
 if planeStrainFlag
     E = E/(1-nu^2);
     nu = nu/(1-nu);
@@ -144,6 +146,45 @@ for iElements=1:nElements
 end
 plot(a:0.1:b,uTeorico(a,b,pressureNormal,pInterferencia,a:0.1:b),'r',b:0.1:c,uTeorico(b,c,pInterferencia,0,b:0.1:c),'b')
 
+%% Solucion teorica semiesfera
+% eEsf = 64.1;
+% ri = a; ro = a+eEsf; pi = pressureNormal; po = 0;
+% sigmaRR = @(r) po*ro.^3*(r.^3-ri.^3)./(r.^3*(ri.^3-ro.^3)) + pi*ri.^3*(ro.^3-r.^3)./(r.^3*(ri.^3-ro.^3));
+% sigmaTT = @(r) po*ro.^3*(2*r.^3+ri.^3)./(2*r.^3*(ri.^3-ro.^3)) - pi*ri.^3*(2*r.^3+ro.^3)./(2*r.^3*(ri.^3-ro.^3));
+% uEsfTeo = @(r) 3*(pi-po)*ri.^3*ro.^3./(4*E*r.^2*(ro.^3-ri.^3));
+% sEsfVM = @(r) sqrt(sigmaRR(r).^2 + sigmaTT(r).^2 - sigmaRR(r).*sigmaTT(r));
+% 
+% figure('Name','S-Esf'); 
+% subplot(1,4,1); hold on; title('Srr'); grid;
+% plot(a:0.1:a+eEsf,sigmaRR(a:0.1:a+eEsf))
+% subplot(1,4,2); hold on; title('Stt'); grid;
+% plot(a:0.1:a+eEsf,sigmaTT(a:0.1:a+eEsf))
+% subplot(1,4,3); hold on; title('Svm'); grid;
+% plot(a:0.1:a+eEsf,sEsfVM(a:0.1:a+eEsf))
+% subplot(1,4,4); hold on; title('u'); grid
+% plot(a:0.1:a+eEsf,uEsfTeo(a:0.1:a+eEsf))
+
+%% otra solucion, esta funciona PERO EN COMPRESION LRPM
+% eEsf = 64.1;
+% C1Esf = @(a,b,p) -p*b^3*(1-2*nu)/(E*(b^3-a^3));
+% C2Esf = @(a,b,p) -p*a^3*b^3*(1+nu)/(2*E*(b^3-a^3));
+% 
+% simgaRR = @(r) ((1+nu)*C1Esf(a,a+eEsf,-pressureNormal)-2*(1-2*nu)*C2Esf(a,a+eEsf,-pressureNormal)./r.^3)*E/((1+nu)*1-2*nu);
+% sigmaTT = @(r) ((1+nu)*C1Esf(a,a+eEsf,-pressureNormal)+(1-2*nu)*C2Esf(a,a+eEsf,-pressureNormal)./r.^3)*E/((1+nu)*1-2*nu);
+% uEsfTeo = @(r) C1Esf(a,a+eEsf,-pressureNormal).*r + C2Esf(a,a+eEsf,-pressureNormal)./r.^2;
+% sEsfVM = @(r) sqrt(sigmaRR(r).^2 + sigmaTT(r).^2 - sigmaRR(r).*sigmaTT(r));
+% 
+% figure('Name','S-Esf'); 
+% subplot(1,4,1); hold on; title('Srr'); grid;
+% plot(a:0.1:a+eEsf,sigmaRR(a:0.1:a+eEsf))
+% subplot(1,4,2); hold on; title('Stt'); grid;
+% plot(a:0.1:a+eEsf,sigmaTT(a:0.1:a+eEsf))
+% subplot(1,4,3); hold on; title('Svm'); grid;
+% plot(a:0.1:a+eEsf,sEsfVM(a:0.1:a+eEsf))
+% subplot(1,4,4); hold on; title('u'); grid
+% plot(a:0.1:a+eEsf,uEsfTeo(a:0.1:a+eEsf))
+
+%% Plots tension y malla deformada
 % Deformed plot
 figure
 meshPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,nNodes)','b','No');
