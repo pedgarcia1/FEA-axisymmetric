@@ -3,10 +3,12 @@ clear; close all; set(0,'DefaultFigureWindowStyle','docked');
 
 E = 200e3; nu = 0.3;
 pressureNormal = 100;
-a = 300; b = a + 64.1; c = b + 97.1; h = 1200;
-interferencia = 0.105; precond = 1e7;
-nElementsZ = 15; nElementsR = 15; distorsion = 0;   
-planeStrainFlag = 0;
+a = 300; b = a + 103.1; c = b + 78.1; h = 600;
+eEsf = 103.1;
+interferencia = 0.31; precond = 1e7;
+nElementsZ = 15; nElementsR = 15; nElementsInRadius = 50; distorsion = 0;   
+planeStrainFlag = 0; numbering = 'No'; % Yes/No
+tol = 0.1; centroEsfera = [0 h];
 
 %% Preprocess
 
@@ -14,20 +16,7 @@ elementType='Q4';          %'CST' 'LST' 'Q4' 'Q8' 'Q9'
 problemType='Axisymmetric';       %'Stress' 'Strain' 'Axisymmetric'
 nDimensions=2;              % Problem dimension
 
-[elements1,nodes1,vertexNodes1,sideNodes]=quadrilateralDomainMeshGenerator_catedra(elementType,'Straight',b-a,h,nElementsR,nElementsZ,0,distorsion);
-nodes1(:,1) = nodes1(:,1) + a;
-[elements2,nodes2,vertexNodes2,sideNodes2] = quadrilateralDomainMeshGenerator(elementType,'Straight',c-b,h,nElementsR,nElementsZ,0,distorsion);
-nNodes1 = size(nodes1,1); nElements1 = size(elements1,1); nNodes2 = size(nodes2,1);
-vertexNodes2 = vertexNodes2 + nNodes1; 
-sideNodes2 = sideNodes2 + size(nodes1,1);
-nodes2(:,1) = nodes2(:,1) + b - interferencia ;
-elements = [elements1;elements2+size(nodes1,1)];
-nodes = [nodes1;nodes2];
-% msh.nodes = nodes;
-% msh.elements = elements;
-
-% Mesh plot
-figure; meshPlot(elements,nodes,'b','No');
+mallador
 
 nElements=size(elements,1);    %Number of elements
 nNodes=size(nodes,1);      %Number of nodes
@@ -45,11 +34,17 @@ if planeStrainFlag
     boundaryConditionsArray(sideNodes2(1,:),2)=true;
     boundaryConditionsArray(sideNodes2(3,:),2)=true;
 else
-    boundaryConditionsArray(sideNodes(1,:),2)=true;
-%     boundaryConditionsArray(sideNodes(3,:),2)=true;
-    boundaryConditionsArray(sideNodes2(1,:),2)=true;
-%     boundaryConditionsArray(sideNodes2(3,:),2)=true;
+%     boundaryConditionsArray(sideNodes(1,:),2)=true;
+%     boundaryConditionsArray(sideNodes2(1,:),2)=true;
+    nodosConZ0 = find(ismembertol(nodes(:,2),0));
+    nodosConR0 = find(ismembertol(nodes(:,1),0));
+    boundaryConditionsArray(nodosConR0,1) = true;
+    boundaryConditionsArray(nodosConZ0,2) = true;
 end
+
+figure; hold on; meshPlot(elements,nodes,'b',numbering);
+scatter(nodes(boundaryConditionsArray(:,1),1),nodes(boundaryConditionsArray(:,1),2),'filled','red');
+scatter(nodes(boundaryConditionsArray(:,2),1),nodes(boundaryConditionsArray(:,2),2),'filled','green');
 
 % Load definition
 pointLoadsArray = zeros(nNodes,nDimensions);            % Point load nodal value for each direction
@@ -57,6 +52,12 @@ Rside = sideNodes(2,:);
 Lside = sideNodes(4,:);
 pointLoadsArray = distributedLoad_3(elementType,Lside,pointLoadsArray,nodes,pressureNormal);
 % pointLoadsArray = distributedLoad_3(elementType,Rside,pointLoadsArray,nodesPositionArray,-pressureNormal);
+
+nodosSEsfSuperior = find(ismembertol(vecnorm(nodes-repmat(centroEsfera, size(nodes, 1), 1),2,2),a)); % nodos sobre la superficie interior de la semiesfera superior
+nodosSEsfSuperior = nodosSEsfSuperior([2:end 1]);
+pointLoadsArray = distributedLoad_Esfera(elementType,nodosSEsfSuperior,pointLoadsArray,nodes,pressureNormal,centroEsfera);
+
+scatter(nodes([Lside nodosSEsfSuperior'],1),nodes([Lside nodosSEsfSuperior'],2),'filled','yellow')
 
 %% Solver
 
@@ -99,7 +100,7 @@ displacementsVector(isFree) = displacementsVector(isFree) + displacementsReduced
 %% Postprocess
 %Stress recovery
 [elementStressExtrapolated,elementStressAtGaussPoints]=stressRecext(elementType,elements,nodes,constitutiveMatrix,displacementsVector);
-% [elementStressAtNodes]=stressRecovery_2(elementType,elementNodesArray,nodesPositionArray,constitutiveMatrix,displacementsVector);
+[elementStressAtNodes]=stressRecovery_2(elementType,elements,nodes,constitutiveMatrix,displacementsVector);
 % las tensiones extrapoladas son mas parecidas a las de NX
 
 %% RESULT PLOTS
@@ -126,14 +127,15 @@ sigmaTita1=@(r) C1(a,b,pressureNormal,pInterferencia)+C2(a,b,pressureNormal,pInt
 sigmaR2=@(r)    C1(b,c,pInterferencia,0)-C2(b,c,pInterferencia,0)./r.^2;
 sigmaTita2=@(r) C1(b,c,pInterferencia,0)+C2(b,c,pInterferencia,0)./r.^2;
 
+nElementsCil = size(elements1,1);
 figure; subplot(1,2,1); hold on; title('Srr'); grid
-for iElements=1:nElements
+for iElements=1:nElementsCil
     scatter(nodes(elements(iElements,:),1),elementStressAtGaussPoints(iElements,:,1))
 end
 plot(a:0.1:b,sigmaR1(a:0.1:b),'r',b:0.1:c,sigmaR2(b:0.1:c),'b')
 
 subplot(1,2,2); hold on; title('Stita'); grid
-for iElements=1:nElements
+for iElements=1:nElementsCil
     scatter(nodes(elements(iElements,:),1),elementStressAtGaussPoints(iElements,:,2))
 end
 plot(a:0.1:b,sigmaTita1(a:0.1:b),'r',b:0.1:c,sigmaTita2(b:0.1:c),'b')
@@ -141,7 +143,7 @@ plot(a:0.1:b,sigmaTita1(a:0.1:b),'r',b:0.1:c,sigmaTita2(b:0.1:c),'b')
 uTeorico= @(a,b,pInt,pOut,r) ((1-nu)/E).* C1(a,b,pInt,pOut) .* r + ((1+nu)/E).*  C2(a,b,pInt,pOut) ./r;
 
 figure; hold on; title('u'); grid
-for iElements=1:nElements
+for iElements=1:nElementsCil
     scatter(nodes(elements(iElements,:),1),displacementsMatrix(elements(iElements,:),1))
 end
 plot(a:0.1:b,uTeorico(a,b,pressureNormal,pInterferencia,a:0.1:b),'r',b:0.1:c,uTeorico(b,c,pInterferencia,0,b:0.1:c),'b')

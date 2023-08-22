@@ -10,7 +10,7 @@ int = zeros(100, length(e));
 %interferencia (filas) y de b (columnas). Si con esos parámetros, no
 %encuentra nada que funcione, usa un -1.
 
-p_int_vec = 0.1:0.1:100; %Mpa
+p_int_vec = 0.1:0.1:200; %Mpa
 for p_int = p_int_vec
     %Voy a ir cubriendo distintas interferencias
     k = 1;

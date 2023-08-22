@@ -1,5 +1,4 @@
 %% mallador
-
 % cilindros zunchado
 [elements1,nodes1,vertexNodes1,sideNodes]=quadrilateralDomainMeshGenerator_catedra(elementType,'Straight',b-a,h,nElementsR,nElementsZ,0,distorsion);
 nodes1(:,1) = nodes1(:,1) + a;
@@ -18,14 +17,12 @@ meshAngle = 90;
 meshInnerRadious = a;
 meshLength = meshInnerRadious*meshAngle*pi/180;
 
-[esf.elements,esf.nodes,esf.vertexNodes,esf.sideNodes]=quadrilateralDomainMeshGenerator(elementType,'Curved',meshLength,eEsf,50,nElementsR,meshAngle,0);
+[esf.elements,esf.nodes,esf.vertexNodes,esf.sideNodes]=quadrilateralDomainMeshGenerator(elementType,'Curved',meshLength,eEsf,nElementsInRadius,nElementsR,meshAngle,0);
 
 esf.nodes(:,2) = esf.nodes(:,2) + h;
 meshPlot(esf.elements,esf.nodes,'r','No')
 
 % merge mallas
-tol = 0.001;
-[msh] = mergeElAr(msh,esf,tol);
-
-% Mesh plot
-figure; meshPlot(msh.elements,msh.nodes,'b','No');
+% tol = 0.001;
+% [msh] = mergeElAr(msh,esf,tol);
+[nodes,elements] = mergeMeshes(msh.nodes,msh.elements,esf.nodes,esf.elements);

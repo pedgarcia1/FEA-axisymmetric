@@ -41,7 +41,7 @@ switch elementType
             pointLoadsArray(Lside(ni:(ni+1)),1) = Fi + pointLoadsArray(Lside(ni:(ni+1)),1);
 
         end
-
+    case 'Q4Esfera'
 
 end
 end
