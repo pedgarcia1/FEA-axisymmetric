@@ -1,8 +1,8 @@
 function [msh]=mergeElAr(stra,strb,tol)
-nodar1=stra.nodesPositionArray;
-elar=stra.elementNodesArray;
-nodar2=strb.nodesPositionArray;
-elarb=strb.elementNodesArray;
+nodar1=stra.nodes;
+elar=stra.elements;
+nodar2=strb.nodes;
+elarb=strb.elements;
 % sidea=stra.sideNodes;
 % sideb=strb.sideNodes;
 
@@ -48,8 +48,8 @@ sidenew = zeros(4,max([length(sidenewI) length(sidenewD)]));
 sidenew(4,1:length(sidenewI)) = sidenewI;
 sidenew(2,1:length(sidenewD)) = sidenewD;
 
-msh.elementNodesArray = elnew;
-msh.nodesPositionArray = nodnew;
+msh.elements = elnew;
+msh.nodes = nodnew;
 msh.sideNodes = sidenew;
 
 % side nodes si noe s cero sumar length(nodar1) despues hacer otro for y si
