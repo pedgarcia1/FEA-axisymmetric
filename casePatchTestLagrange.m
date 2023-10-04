@@ -3,10 +3,10 @@ clear; close all; set(0,'DefaultFigureWindowStyle','docked');
 
 E = 200e3; nu = 0.3;
 pressureNormal = 100;
-a = 300; b = a + 103.1; c = b + 78.1; h = 600;
-eEsf = 103.1;
-interferencia = 0.31; precond = 1e7;
-nElementsZ = 15; nElementsR = 15; nElementsInRadius = 50; distorsion = 0;   
+a = 300; b = a + 108.1; c = b + 78.1; h = 600;
+eEsf = b-a;
+interferencia = 0.32; precond = 1e7;
+nElementsZ = 20; nElementsR = 15; nElementsInRadius = 50; distorsion = 0;   
 planeStrainFlag = 0; numbering = 'No'; % Yes/No
 tol = 0.1; centroEsfera = [0 h];
 
@@ -207,6 +207,12 @@ bandPlot(elements1,nodes1+magnificationFactor*reshape(displacementsVector(conver
  subplot(1,2,2); title('Out Svm [Mpa]')
 meshPlot(elements2,nodes2+magnificationFactor*reshape(displacementsVector(convertNode2Dof(nNodes1+1:nNodes2+nNodes1,nDimensions)),nDimensions,[])','b','No');
 bandPlot(elements2,nodes2+magnificationFactor*reshape(displacementsVector(convertNode2Dof(nNodes1+1:nNodes2+nNodes1,nDimensions)),nDimensions,[])',vonMisesStress(nElements1+1:end,:));
+
+% toda la malla VM Plot
+figure; title('Svm [MPa]')
+meshPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,[])','b','No');
+bandPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,[])',vonMisesStress);
+
 
 % Sxx plot
 Sxx = squeeze(elementStressExtrapolated(:,:,1)); 

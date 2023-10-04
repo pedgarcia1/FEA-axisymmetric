@@ -2,8 +2,8 @@
 
 E = 200e3; v = 0.3;
 a = 300; %mm, radio interior
-sigma_y = 250; %Mpa
-p = 200; %Mpa
+sigma_y = 245; %Mpa
+p = 100; %Mpa
 FS = 1;
 tapasFlag = 1; % tapas serian los casquetes, si no hay la tension en z es distinta
 planeStrainFlag = 0;
