@@ -1,4 +1,4 @@
-function [pointLoadsArray] = distributedLoad_3(elementType,Lside,pointLoadsArray,nodesPositionArray,pressureNormal)
+function [pointLoadsArray] = distributedLoad_3(elementType,Lside,direc,pointLoadsArray,nodesPositionArray,pressureNormal)
 
 q = @(r) pressureNormal*2*pi*r;
 
@@ -21,7 +21,7 @@ switch elementType
 
             Fi = matQ(a)*q_vec';
 
-            pointLoadsArray(Lside(ni:(ni+2)),1) = Fi + pointLoadsArray(Lside(ni:(ni+2)),1);
+            pointLoadsArray(Lside(ni:(ni+2)),direc) = Fi + pointLoadsArray(Lside(ni:(ni+2)),direc);
 
         end
 
@@ -38,7 +38,7 @@ switch elementType
 
             Fi = matQ(a)*q_vec';
 
-            pointLoadsArray(Lside(ni:(ni+1)),1) = Fi + pointLoadsArray(Lside(ni:(ni+1)),1);
+            pointLoadsArray(Lside(ni:(ni+1)),direc) = Fi + pointLoadsArray(Lside(ni:(ni+1)),direc);
 
         end
     case 'Q4Esfera'

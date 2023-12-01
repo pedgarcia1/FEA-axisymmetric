@@ -4,15 +4,16 @@ clear; close all; set(0,'DefaultFigureWindowStyle','docked');
 E = 200e3; nu = 0.3;
 pressureNormal = 100;
 a = 1; b = 2;  h = 1;
-nElementsZ = 2; nElementsR = 2;  distorsion = 0.23;   
+nElementsZ = 2; nElementsR = 2;  distorsion = 0;   
 numbering = 'Yes'; % Yes/No
 tol = 0.1; 
+caso = 2;
 
 %% Preprocess
 
-elementType='Q4';          %'CST' 'LST' 'Q4' 'Q8' 'Q9'
-problemType='Axisymmetric';       %'Stress' 'Strain' 'Axisymmetric'
-nDimensions=2;              % Problem dimension
+elementType = 'Q4';          %'CST' 'LST' 'Q4' 'Q8' 'Q9'
+problemType = 'Axisymmetric';       %'Stress' 'Strain' 'Axisymmetric'
+nDimensions = 2;              % Problem dimension
 
 [elements,nodes,vertexNodes,sideNodes]=quadrilateralDomainMeshGenerator_catedra(elementType,'Straight',b-a,h,nElementsR,nElementsZ,0,distorsion);
 nodes(:,1) = nodes(:,1) + a;
@@ -28,8 +29,17 @@ nConstraints = 0;
 
 % Boundary conditions
 boundaryConditionsArray = false(nNodes,nDimensions);    % Boundary conditions array true=fixed
-boundaryConditionsArray(sideNodes(1,:),2) = true;
-% boundaryConditionsArray(sideNodes(3,:),2) = true;
+switch caso
+    case 1
+        boundaryConditionsArray(sideNodes(1,:),2) = true;
+    case 2
+        boundaryConditionsArray(sideNodes(1,:),2) = true;
+        boundaryConditionsArray(sideNodes(3,:),2) = true;
+    case 3
+        boundaryConditionsArray(sideNodes(1,:),2) = true;
+        boundaryConditionsArray(sideNodes(2,:),1) = true;        
+        boundaryConditionsArray(sideNodes(4,:),1) = true; 
+end
 
 scatter(nodes(boundaryConditionsArray(:,1),1),nodes(boundaryConditionsArray(:,1),2),'filled','red');
 scatter(nodes(boundaryConditionsArray(:,2),1),nodes(boundaryConditionsArray(:,2),2),'filled','green');
@@ -38,9 +48,17 @@ scatter(nodes(boundaryConditionsArray(:,2),1),nodes(boundaryConditionsArray(:,2)
 pointLoadsArray = zeros(nNodes,nDimensions);            % Point load nodal value for each direction
 Rside = sideNodes(2,:);
 Lside = sideNodes(4,:);
-pointLoadsArray = distributedLoad_3(elementType,Lside,pointLoadsArray,nodes,pressureNormal);
-pointLoadsArray = distributedLoad_3(elementType,Rside,pointLoadsArray,nodes,-pressureNormal);
 
+switch caso
+    case 1
+        pointLoadsArray = distributedLoad_3(elementType,Lside,1,pointLoadsArray,nodes,pressureNormal);
+        pointLoadsArray = distributedLoad_3(elementType,Rside,1,pointLoadsArray,nodes,-pressureNormal);
+    case 2
+        pointLoadsArray = distributedLoad_3(elementType,Lside,1,pointLoadsArray,nodes,pressureNormal);
+        pointLoadsArray = distributedLoad_3(elementType,Rside,1,pointLoadsArray,nodes,-pressureNormal);
+    case 3
+        pointLoadsArray = distributedLoad_3(elementType,sideNodes(3,:),2,pointLoadsArray,nodes,-pressureNormal);
+end
 scatter(nodes(pointLoadsArray(:,1) ~= 0,1),nodes(pointLoadsArray(:,1) ~= 0,2),'filled','yellow')
 % quiver(nodes(Lside,1),nodes(Lside,2),pointLoadsArray(Lside,1),pointLoadsArray(Lside,2))
 % quiver(nodes(Rside,1),nodes(Rside,2),pointLoadsArray(Rside,1),pointLoadsArray(Rside,2))

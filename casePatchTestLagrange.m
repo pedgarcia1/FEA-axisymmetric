@@ -50,7 +50,7 @@ scatter(nodes(boundaryConditionsArray(:,2),1),nodes(boundaryConditionsArray(:,2)
 pointLoadsArray = zeros(nNodes,nDimensions);            % Point load nodal value for each direction
 Rside = sideNodes(2,:);
 Lside = sideNodes(4,:);
-pointLoadsArray = distributedLoad_3(elementType,Lside,pointLoadsArray,nodes,pressureNormal);
+pointLoadsArray = distributedLoad_3(elementType,Lside,1,pointLoadsArray,nodes,pressureNormal);
 % pointLoadsArray = distributedLoad_3(elementType,Rside,pointLoadsArray,nodesPositionArray,-pressureNormal);
 
 nodosSEsfSuperior = find(ismembertol(vecnorm(nodes-repmat(centroEsfera, size(nodes, 1), 1),2,2),a)); % nodos sobre la superficie interior de la semiesfera superior

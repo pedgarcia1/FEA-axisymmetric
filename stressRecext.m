@@ -37,7 +37,7 @@ elementStressAtGaussPoints = zeros(nElements,nPoints,4);
 shapeFunctionsDerivatives = getShapeFunctionsDerivatives(naturalNodalCoordinates,elementType);
 
 [gaussPointsLocation,~] = getGaussPoints('Quadrilateral',4);
-gaussPointsLocation = gaussPointsLocation([1 2 4 3],:);
+% gaussPointsLocation = gaussPointsLocation([1 2 4 3],:);
 [Ni,~] = shapefuns(gaussPointsLocation,elementType);
 
 for iElement = 1:nElements
@@ -70,10 +70,22 @@ end
 % Extrapolo a los Nodos
 
 a = sqrt(3);
-rsExt = a*[-1  -1
-    1  -1
-    1   1
-    -1   1];
+switch elementType
+    case 'Q4'
+        rsExt = a*[-1  -1
+            1  -1
+            1   1
+            -1   1];
+    case 'Q8'
+        rsExt = a*[-1  -1
+            1  -1
+            1   1
+            -1   1
+            0 -1
+            1 0
+            0 1
+            -1 0];
+end
 nPoints = size(rsExt,1); 
 stressExtra = zeros(nElements,nPoints,4); 
 % SON 4 PORQUE SON sigmar sigmatit sigmaz y tau_zr
