@@ -45,7 +45,7 @@ nTotalDof = nDimensions*nNodes;                 %Number of node in each element
 
 %% Integration
 [gaussPointsLocation,gaussPointsWeight] = getGaussPoints(elementShape,nGaussPoints);
-gaussPointsLocation = gaussPointsLocation([1 2 4 3],:);
+% gaussPointsLocation = gaussPointsLocation([1 2 3 4],:);
 
 %% Stiffness matrix assembly
 stiffnessMatrix = zeros(nTotalDof);

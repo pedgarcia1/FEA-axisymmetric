@@ -1,0 +1,37 @@
+
+*** 13:13:42 *** 
+Starting Nastran Exporter
+
+*** 13:13:42 *** 
+Writing file C:\Users\usuario\Documents\MATLAB\FEA-axisymmetric\final.dat
+
+*** 13:13:42 *** 
+Writing NX NASTRAN 12.2 compatible deck
+
+*** 13:13:42 *** 
+Writing Bulk Data section
+
+*** 13:13:42 *** 
+Writing Nodes
+
+*** 13:13:42 *** 
+Writing Elements
+
+*** 13:13:42 *** 
+Writing Loads and Constraints
+
+*** 13:13:42 *** 
+Summary of Bulk Data cards written
+
++----------+----------+
+|   NAME   |  NUMBER  |
++----------+----------+
+| CQUADX4  | 938      |
+| GRID     | 1121     |
+| SPC      | 21       |
+| SPCADD   | 1        |
++----------+----------+
+
+*** 13:13:42 *** 
+Nastran Deck Successfully Written
+
