@@ -3,9 +3,9 @@ clear; close all; set(0,'DefaultFigureWindowStyle','docked');
 
 E = 200e3; nu = 0.3;
 pressureNormal = 100;
-a = 300; b = a + 108.1; c = b + 78.1; h = 600;
+a = 300; b = a + 108.1; c = b + 78.1; h = 1200;
 eEsf = b-a;
-interferencia = 0.32; precond = 1e7;
+interferencia = 0.31; precond = 1e7;
 nElementsZ = 20; nElementsR = 15; nElementsInRadius = 50; distorsion = 0;   
 planeStrainFlag = 0; numbering = 'No'; % Yes/No
 tol = 0.1; centroEsfera = [0 h];
@@ -35,7 +35,7 @@ boundaryConditionsArray(msh.bcond.fijox,1) = true;
 boundaryConditionsArray(msh.bcond.fijoz,2) = true;
 
 figure; hold on; meshPlot(elements,nodes,'b',numbering); scatH = [];
-scatH(end+1) = scatter(nodes(boundaryConditionsArray(:,1),1),nodes(boundaryConditionsArray(:,1),2),'filled','red');
+scatH(1) = scatter(nodes(boundaryConditionsArray(:,1),1),nodes(boundaryConditionsArray(:,1),2),'filled','red');
 scatH(end+1) = scatter(nodes(boundaryConditionsArray(:,2),1),nodes(boundaryConditionsArray(:,2),2),'filled','green');
 
 % Load definition
@@ -55,7 +55,7 @@ msh.c = impConstraintsNX('finalConstraints.csv');
 
 maxR = max(msh.c.RCoord);
 intCilNodes = msh.c.NodeID(msh.c.RCoord == maxR);
-intCilNodes = intCilNodes(2:end);
+% intCilNodes = intCilNodes(2:end);
 minR = min(msh.c.RCoord);
 outCilNodes = msh.c.NodeID(msh.c.RCoord == minR);
 
@@ -68,7 +68,11 @@ leftSideDOF = convertNode2Dof(outCilNodes',nDimensions);
 n = 1;
 for i = 1:2:length(rightSideDOF)
     C(n,rightSideDOF(i)) = -1*precond; % u1
-    C(n,leftSideDOF(i)) = 1*precond; % u2
+    nod1 = (rightSideDOF(i) + 1)/nDimensions;
+    [~,I] = sort(sqrt( (nodes(nod1,1) - nodes(outCilNodes,1)).^2 + (nodes(nod1,2) - nodes(outCilNodes,2)).^2 ),'ascend');
+    nod2 = outCilNodes(I(1));
+    nod2dof = convertNode2Dof(nod2,nDimensions);
+    C(n,nod2dof(1)) = 1*precond; % u2
     n = n + 1;
 end
 
@@ -117,8 +121,12 @@ else
     fprintf("Caso plane stress \n")
 end
 
-% pInterferencia=(E*interferencia/b) * (b^2-a^2)*(c^2-b^2) / (2*b^2*(c^2-a^2));
-pInterferencia = abs(mean(mean(elementStressAtGaussPoints([90 301],:,1))))
+% pInterferencia = abs(mean(mean(elementStressAtGaussPoints([90 301],:,1))))
+outCilElements = find(any(ismember(elements,outCilNodes)'));
+intCilElements = find(any(ismember(elements,intCilNodes)'));
+pInterferenciaInt = abs(mean(mean(elementStressAtGaussPoints(intCilElements,:,1))));
+pInterferenciaOut = abs(mean(mean(elementStressAtGaussPoints(outCilElements,:,1))));
+pInterferencia = 39.1;
 
 C1= @(a,b,pInt,pOut) (a^2*pInt-b^2*pOut)/(b^2-a^2);
 C2= @(a,b,pInt,pOut) (pInt-pOut)*a^2*b^2/(b^2-a^2);
@@ -129,63 +137,73 @@ sigmaTita1=@(r) C1(a,b,pressureNormal,pInterferencia)+C2(a,b,pressureNormal,pInt
 sigmaR2=@(r)    C1(b,c,pInterferencia,0)-C2(b,c,pInterferencia,0)./r.^2;
 sigmaTita2=@(r) C1(b,c,pInterferencia,0)+C2(b,c,pInterferencia,0)./r.^2;
 
-nElementsCil = size(elements1,1);
-figure; subplot(1,2,1); hold on; title('Srr'); grid
-for iElements=1:nElementsCil
-    scatter(nodes(elements(iElements,:),1),elementStressAtGaussPoints(iElements,:,1))
+figure; subplot(1,2,1); hold on; title('\sigma_{r}','Interpreter','tex'); grid
+% zPlot = -500;
+zPlot = -500;
+log = find(abs(nodes(:,2) - zPlot) < 10);
+for i = 1:size(log,1)
+    eleLog = ismember(elements,log(i));
+    iEles = find(any(eleLog')');
+    for n = 1:size(iEles)
+        auxStress(n) = elementStressExtrapolated(iEles(n),eleLog(iEles(n),:)',1);
+    end
+    h(1) = scatter(nodes(log(i),1),mean(auxStress));
+    auxStress = [];
 end
-plot(a:0.1:b,sigmaR1(a:0.1:b),'r',b:0.1:c,sigmaR2(b:0.1:c),'b')
 
-subplot(1,2,2); hold on; title('Stita'); grid
-for iElements=1:nElementsCil
-    scatter(nodes(elements(iElements,:),1),elementStressAtGaussPoints(iElements,:,2))
+aux = plot(a:0.1:b,sigmaR1(a:0.1:b),'r',b:0.1:c,sigmaR2(b:0.1:c),'b');
+h(2) = aux(1);
+legend(h,{'FEA','Sol. Teorica'},'Location','northwest')
+
+subplot(1,2,2); hold on; title('\sigma_{\theta}','Interpreter','tex'); grid
+log = find(abs(nodes(:,2) - zPlot) < 10);
+for i = 1:size(log,1)
+    eleLog = ismember(elements,log(i));
+    iEles = find(any(eleLog')');
+    for n = 1:size(iEles)
+        auxStress(n) = elementStressExtrapolated(iEles(n),eleLog(iEles(n),:)',2);
+    end
+    h(1) = scatter(nodes(log(i),1),mean(auxStress));
+    auxStress = [];
 end
-plot(a:0.1:b,sigmaTita1(a:0.1:b),'r',b:0.1:c,sigmaTita2(b:0.1:c),'b')
+
+aux = plot(a:0.1:b,sigmaTita1(a:0.1:b),'r',b:0.1:c,sigmaTita2(b:0.1:c),'b');
+h(2) = aux(1);
+legend(h,{'FEA','Sol. Teorica'},'Location','northwest')
 
 uTeorico= @(a,b,pInt,pOut,r) ((1-nu)/E).* C1(a,b,pInt,pOut) .* r + ((1+nu)/E).*  C2(a,b,pInt,pOut) ./r;
-
+%%
 figure; hold on; title('u'); grid
-for iElements=1:nElementsCil
-    scatter(nodes(elements(iElements,:),1),displacementsMatrix(elements(iElements,:),1))
-end
-plot(a:0.1:b,uTeorico(a,b,pressureNormal,pInterferencia,a:0.1:b),'r',b:0.1:c,uTeorico(b,c,pInterferencia,0,b:0.1:c),'b')
+log = find(abs(nodes(:,2) - zPlot) < 10);
+aux = scatter(nodes(log,1),displacementsMatrix(log,1));
+h(1) = aux(1);
+FTapas = pi*a^2*pressureNormal;
+LBar = FTapas*1200/(pi*(b^2-a^2)*E); 
+uBar = nu*LBar;
+aux = plot(a:0.1:b,uTeorico(a,b,pressureNormal,pInterferencia,a:0.1:b),'r',b:0.1:c,uTeorico(b,c,pInterferencia,0,b:0.1:c),'b');
+h(2) = aux(1);
+legend(h,{'FEA','Sol. Teorica'},'Location','northwest')
 
-%% Plots tension y malla deformada
-% Deformed plot
-figure
+%% Deformed plot
+figure; title(sprintf('Deformed Plot MF: %d',magnificationFactor));
 meshPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,nNodes)','b','No');
 % meshPlot(elements(1:nNodes1,:),nodes(1:nNodes1,:)+magnificationFactor*reshape(displacementsVector(1:nNodes1),[],nNodes1)','b','No');
 
-% % Stresses plot
-% figure
-% meshPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,nNodes)','b','No');
-% bandPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,nNodes)',squeeze(elementStressAtGaussPoints(:,:,3)));
-% title('Szz en los nodos [Mpa]')
 
-% Von Mises Plot
+%% Von Mises Plot
 Sxx = squeeze(elementStressExtrapolated(:,:,1))'; Syy = squeeze(elementStressExtrapolated(:,:,2))'; Szz = squeeze(elementStressExtrapolated(:,:,3))'; Szx = squeeze(elementStressExtrapolated(:,:,4))';
 vonMisesStress = transpose(1/sqrt(2)*sqrt( (Sxx-Syy).^2 + (Syy-Szz).^2 + (Szz-Sxx).^2 + 6*Szx.^2 ));
-figure; subplot(1,2,1); title('Int Svm [Mpa]')
-meshPlot(elements1,nodes1+magnificationFactor*reshape(displacementsVector(convertNode2Dof(1:nNodes1,nDimensions)),nDimensions,[])','b','No');
-bandPlot(elements1,nodes1+magnificationFactor*reshape(displacementsVector(convertNode2Dof(1:nNodes1,nDimensions)),nDimensions,[])',vonMisesStress(1:nNodes1,:));
- subplot(1,2,2); title('Out Svm [Mpa]')
-meshPlot(elements2,nodes2+magnificationFactor*reshape(displacementsVector(convertNode2Dof(nNodes1+1:nNodes2+nNodes1,nDimensions)),nDimensions,[])','b','No');
-bandPlot(elements2,nodes2+magnificationFactor*reshape(displacementsVector(convertNode2Dof(nNodes1+1:nNodes2+nNodes1,nDimensions)),nDimensions,[])',vonMisesStress(nElements1+1:end,:));
 
 % toda la malla VM Plot
-figure; title('Svm [MPa]')
+figure; title('\sigma_{Von Mises} [MPa]','Interpreter','tex')
 meshPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,[])','b','No');
 bandPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,[])',vonMisesStress);
+fallaNodes = vonMisesStress > 250*ones(nElements,4);
+fallaNodes = elements(fallaNodes);
+scatter(nodes(fallaNodes,1),nodes(fallaNodes,2),'red','filled');
+% caxis([0 250            ])
 
 
-% Sxx plot
-Sxx = squeeze(elementStressExtrapolated(:,:,1)); 
-figure; subplot(1,2,1); title('Int Sxx [Mpa]')
-meshPlot(elements1,nodes1+magnificationFactor*reshape(displacementsVector(convertNode2Dof(1:nNodes1,nDimensions)),nDimensions,[])','b','No');
-bandPlot(elements1,nodes1+magnificationFactor*reshape(displacementsVector(convertNode2Dof(1:nNodes1,nDimensions)),nDimensions,[])',Sxx(1:nNodes1,:));
- subplot(1,2,2); title('Out Sxx [Mpa]')
-meshPlot(elements2,nodes2+magnificationFactor*reshape(displacementsVector(convertNode2Dof(nNodes1+1:nNodes2+nNodes1,nDimensions)),nDimensions,[])','b','No');
-bandPlot(elements2,nodes2+magnificationFactor*reshape(displacementsVector(convertNode2Dof(nNodes1+1:nNodes2+nNodes1,nDimensions)),nDimensions,[])',Sxx(nElements1+1:end,:));
 
 
 

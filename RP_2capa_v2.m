@@ -1,6 +1,6 @@
-function [espesores, D, interferencia, p_i]= RP_2capa_v2(tapasFlag,p, sigma_y, FS, a, E, v)
+function [espesores, D, interferencia, p_i]= RP_2capa_v2(tapasFlag,planeStrainFlag,p, sigma_y, FS, a, E, v)
 
-e = 0.1:1:500; 
+e = 0.1:1:500;
 
 i = 1;
 espesor_1 = zeros(100, length(e));
@@ -16,60 +16,65 @@ for p_int = p_int_vec
     k = 1;
     for b = a+e %Recorro los distintos valores de b posibles
         c = b+e;
-        
+
         %Las tensiones se analizan por superposición. El 1 es el cilindro
         %interno y el 2 el externo. Cada uno se ve afectado por la presión
         %de interferencia de su manera correspondiente, y también como un
         %continuo por la presión interna. Se asume un b igual para ambos en
         %la interfase. Se evalúa en el radio interno de cada tubo
-        
+
         %p_int = E*int*(b^2 - a^2)*(c.^2-b^2)./((2-v)*(b^3.*(c.^2-a^2)));
         sigma_r1 = -p;
-%         sigma_tita1 = (p./(c.^2-a^2)).*(a^2 + c.^2) + (p_int/(b^2-a^2))*(-2*b^2);
+        %         sigma_tita1 = (p./(c.^2-a^2)).*(a^2 + c.^2) + (p_int/(b^2-a^2))*(-2*b^2);
         sigma_tita1 = (p./(b.^2-a^2)).*(a.^2 + b.^2) + (p_int/(b.^2-a.^2))*(-2*b.^2);
 
-        
-%         sigma_r2 = (p./(c.^2-a^2)).*(a^2 - (a^2*c.^2)/b^2) - p_int;
+
+        %         sigma_r2 = (p./(c.^2-a^2)).*(a^2 - (a^2*c.^2)/b^2) - p_int;
         sigma_r2 = -p_int;
-%         sigma_tita2 = (p./(c.^2-a^2)).*(a^2 + (a^2*c.^2)/b^2)+(p_int./(c.^2-b^2)).*(b^2+c.^2);
-%         sigma_tita2 = (p./(c.^2-b.^2)).*(b.^2 + (a.^2*c.^2)/b^2)+(p_int./(c.^2-b^2)).*(b.^2+c.^2);
+        %         sigma_tita2 = (p./(c.^2-a^2)).*(a^2 + (a^2*c.^2)/b^2)+(p_int./(c.^2-b^2)).*(b^2+c.^2);
+        %         sigma_tita2 = (p./(c.^2-b.^2)).*(b.^2 + (a.^2*c.^2)/b^2)+(p_int./(c.^2-b^2)).*(b.^2+c.^2);
         sigma_tita2 = p_int.*(b.^2 + c.^2)./(c.^2 - b.^2);
 
-%       sigma_z = p*a^2./(c.^2-a^2); 
-        
+        %       sigma_z = p*a^2./(c.^2-a^2);
+
         if tapasFlag
-            sigma_z1 = p*a^2./(b.^2-a^2); 
-            sigma_z2 = 0; 
-        else 
-            sigma_z1 = v*(sigma_r1+sigma_tita1);
-            sigma_z2 = v*(sigma_r2+sigma_tita2);
+            sigma_z1 = p*a^2./(b.^2-a^2);
+            sigma_z2 = 0;
+        else
+            if planeStrainFlag
+                sigma_z1 = v*(sigma_r1+sigma_tita1);
+                sigma_z2 = v*(sigma_r2+sigma_tita2);
+            else
+                sigma_z1 = 0;
+                sigma_z2 = 0;
+            end
         end
 
         %Tresca para ambos tubos
-%         sigma1 = max([abs(sigma_z-sigma_r1); abs(sigma_z-sigma_tita1); abs(sigma_tita1-sigma_r1)]);
-%         sigma2 = max([abs(sigma_z-sigma_r2); abs(sigma_z-sigma_tita2); abs(sigma_tita2-sigma_r2)]);
-                
+        %         sigma1 = max([abs(sigma_z-sigma_r1); abs(sigma_z-sigma_tita1); abs(sigma_tita1-sigma_r1)]);
+        %         sigma2 = max([abs(sigma_z-sigma_r2); abs(sigma_z-sigma_tita2); abs(sigma_tita2-sigma_r2)]);
+
         % vm para ambos tubos
         sigma1 = sqrt(0.5*((sigma_r1-sigma_tita1).^2 + (sigma_tita1-sigma_z1).^2 + (sigma_z1-sigma_r1).^2 ));
         sigma2 = sqrt(0.5*((sigma_r2-sigma_tita2).^2 + (sigma_tita2-sigma_z2).^2 + (sigma_z2-sigma_r2).^2 ));
-        
+
         %Condiciones para que un valor de c sea válido:
         % -Presión de interferencia < 10 MPa
         % -No pasar la fluencia en ninguno de los dos tubos
-%         cond_int = p_int < 10;
+        %         cond_int = p_int < 10;
         cond_int = p_int > 1;
         cond_y1 = sigma1 < sigma_y/FS;
         cond_y2 = sigma2 < sigma_y/FS;
-        
+
         %Elijo el valor de c más chico que cumpla las condiciones, para un
         %par (interferencia, b) en particular
         c_min = min(c(cond_int & cond_y1 & cond_y2));
-        
+
         %Lleno las matrices
         if ~isempty(c_min)
             espesor_2(i,k) = c_min - b;
             espesor_1(i,k) = b - a;
-%             int(i,k) = p_int/(E*(b^2 - a^2)*(c_min.^2-b^2)/((2-v)*(b^3*(c_min^2-a^2))));
+            %             int(i,k) = p_int/(E*(b^2 - a^2)*(c_min.^2-b^2)/((2-v)*(b^3*(c_min^2-a^2))));
             int(i,k) = 2*b^3*(c_min.^2-a^2)*p_int/(E*(b^2-a^2)*(c_min.^2-b^2));
         else
             espesor_2(i,k) = -1;
@@ -83,7 +88,7 @@ end
 
 %Busco el elemento cuya suma de espesores sea mínima y positiva
 sum_espesores = espesor_2 + espesor_1;
-[x, y] = find(sum_espesores == min(sum_espesores(sum_espesores>0)), 1); 
+[x, y] = find(sum_espesores == min(sum_espesores(sum_espesores>0)), 1);
 
 espesores = [espesor_1(x,y), espesor_2(x,y)];
 D = (a + min(sum_espesores(sum_espesores>0)))*2;
