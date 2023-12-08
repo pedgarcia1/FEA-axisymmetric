@@ -48,7 +48,8 @@ nTotalDof = nDimensions*nNodes;                 %Number of node in each element
 % gaussPointsLocation = gaussPointsLocation([1 2 3 4],:);
 
 %% Stiffness matrix assembly
-stiffnessMatrix = zeros(nTotalDof);
+% stiffnessMatrix = zeros(nTotalDof);
+stiffnessMatrix = sparse(nTotalDof,nTotalDof);
 
 % Shape functions derivatives at every Gauss point in natural coordinates
 shapeFunctionsDerivatives = getShapeFunctionsDerivatives(gaussPointsLocation,elementType);
