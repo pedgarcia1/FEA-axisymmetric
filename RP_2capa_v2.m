@@ -16,7 +16,6 @@ for p_int = p_int_vec
     k = 1;
     for b = a+e %Recorro los distintos valores de b posibles
         c = b+e;
-
         %Las tensiones se analizan por superposición. El 1 es el cilindro
         %interno y el 2 el externo. Cada uno se ve afectado por la presión
         %de interferencia de su manera correspondiente, y también como un

@@ -5,7 +5,7 @@ a = 300; %mm, radio interior
 sigma_y = 250; %Mpa
 p = 100; %Mpa
 FS = 1;
-tapasFlag = 0; % tapas serian los casquetes, si no hay la tension en z es distinta
+tapasFlag = 1; % tapas serian los casquetes, si no hay la tension en z es distinta
 planeStrainFlag = 0;
 % para solo zunchado
 % tapasFlag = 0; planeStrainFlag = 0;
@@ -29,15 +29,6 @@ u = @(r,a,b,pint,pout) (1-v)/E*(a.^2*pint-b.^2*pout)*r/(b.^2-a.^2) + (1+v)/E*(pi
 % r = 300mm interior
 uRa = u(a,a,b,p,p_interferencia)
 
-%% Eqs de Lame
-% ci = (b^2+a^2)/(b^2-a^2)-v;
-% co = (c^2+b^2)/(c^2-b^2)+v;
-% 
-% deltao = co*b*p/E/2;
-% deltai = ci*b*p/E/2;
-% intTeoN = p*b*(co+ci)/E
-% no chequea con nx tampoco
-
 %% ESFERA
 % thick walled solution
 % chequeado del saad elasticity pag. 388
@@ -51,3 +42,14 @@ svm = @(t) sigma_y - 1/sqrt(2)*sqrt((sigmarr(t)-sigmatt(t))^2 + (sigmatt(t)-sigm
 
 options = optimoptions('fsolve','Display','none','PlotFcn',@optimplotfirstorderopt);
 tEsfTeorico = fsolve(svm,10,options)
+
+%% Sin Zunchado, con Casquetes (tapas)
+
+syms b 
+p_int = 0;
+sigma_r1 = -p;
+sigma_tita1 = (p./(b.^2-a^2)).*(a.^2 + b.^2) + (p_int/(b.^2-a.^2))*(-2*b.^2);
+sigma_z1 = p*a^2./(b.^2-a^2);
+sigma1 = sqrt(0.5*((sigma_r1-sigma_tita1).^2 + (sigma_tita1-sigma_z1).^2 + (sigma_z1-sigma_r1).^2 ));
+solve(sigma1 == 250,b)
+

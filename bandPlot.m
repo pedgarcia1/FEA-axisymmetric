@@ -78,7 +78,7 @@ ticks = bandplotLimits(1):((diff(bandplotLimits))/nTicks):bandplotLimits(2);
 tickLabels = cell(size(ticks));
 
 for iTick = 1:length(ticks)
-    tickLabels{iTick} = sprintf('%6.5E',ticks(iTick));
+    tickLabels{iTick} = sprintf('%.2f',ticks(iTick));
 end
 
 colorbar('YTick',ticks,'YTickLabel',tickLabels);

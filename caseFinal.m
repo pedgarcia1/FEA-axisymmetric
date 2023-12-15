@@ -126,16 +126,21 @@ outCilElements = find(any(ismember(elements,outCilNodes)'));
 intCilElements = find(any(ismember(elements,intCilNodes)'));
 pInterferenciaInt = abs(mean(mean(elementStressAtGaussPoints(intCilElements,:,1))));
 pInterferenciaOut = abs(mean(mean(elementStressAtGaussPoints(outCilElements,:,1))));
-pInterferencia = 39.1;
+pInterferencia = pInterferenciaInt;
 
 C1= @(a,b,pInt,pOut) (a^2*pInt-b^2*pOut)/(b^2-a^2);
 C2= @(a,b,pInt,pOut) (pInt-pOut)*a^2*b^2/(b^2-a^2);
 
 sigmaR1=@(r)    C1(a,b,pressureNormal,pInterferencia)-C2(a,b,pressureNormal,pInterferencia)./r.^2;
 sigmaTita1=@(r) C1(a,b,pressureNormal,pInterferencia)+C2(a,b,pressureNormal,pInterferencia)./r.^2;
+sigma_z1 = pressureNormal*a^2./(b.^2-a^2);
 
 sigmaR2=@(r)    C1(b,c,pInterferencia,0)-C2(b,c,pInterferencia,0)./r.^2;
 sigmaTita2=@(r) C1(b,c,pInterferencia,0)+C2(b,c,pInterferencia,0)./r.^2;
+
+sigmaVM1=@(r) sqrt(0.5*((sigmaR1(r)-sigmaTita1(r)).^2 + (sigmaTita1(r)-sigma_z1).^2 + (sigma_z1-sigmaR1(r)).^2 ));
+sigmaVM2=@(r) sqrt(0.5*((sigmaR2(r)-sigmaTita2(r)).^2 + (sigmaTita2(r)-0).^2 + (0-sigmaR2(r)).^2 ));
+
 
 figure; subplot(1,2,1); hold on; title('\sigma_{r}','Interpreter','tex'); grid
 % zPlot = -500;
@@ -153,7 +158,11 @@ end
 
 aux = plot(a:0.1:b,sigmaR1(a:0.1:b),'r',b:0.1:c,sigmaR2(b:0.1:c),'b');
 h(2) = aux(1);
-legend(h,{'FEA','Sol. Teorica'},'Location','northwest')
+legend(h,{'FEA','Sol. Teorica'},'Location','northwest','FontSize',16)
+xlabel('r [mm]','FontSize',16); ylabel('MPa','FontSize',16);
+ac = gca();
+ac.XAxis.FontSize = 16;
+ac.YAxis.FontSize = 16;
 
 subplot(1,2,2); hold on; title('\sigma_{\theta}','Interpreter','tex'); grid
 log = find(abs(nodes(:,2) - zPlot) < 10);
@@ -169,7 +178,11 @@ end
 
 aux = plot(a:0.1:b,sigmaTita1(a:0.1:b),'r',b:0.1:c,sigmaTita2(b:0.1:c),'b');
 h(2) = aux(1);
-legend(h,{'FEA','Sol. Teorica'},'Location','northwest')
+legend(h,{'FEA','Sol. Teorica'},'Location','northwest','FontSize',16)
+xlabel('r [mm]','FontSize',16); ylabel('MPa','FontSize',16);
+ac = gca();
+ac.XAxis.FontSize = 16;
+ac.YAxis.FontSize = 16;
 
 uTeorico= @(a,b,pInt,pOut,r) ((1-nu)/E).* C1(a,b,pInt,pOut) .* r + ((1+nu)/E).*  C2(a,b,pInt,pOut) ./r;
 %%
@@ -182,13 +195,14 @@ LBar = FTapas*1200/(pi*(b^2-a^2)*E);
 uBar = nu*LBar;
 aux = plot(a:0.1:b,uTeorico(a,b,pressureNormal,pInterferencia,a:0.1:b),'r',b:0.1:c,uTeorico(b,c,pInterferencia,0,b:0.1:c),'b');
 h(2) = aux(1);
-legend(h,{'FEA','Sol. Teorica'},'Location','northwest')
+legend(h,{'FEA','Sol. Teorica'},'Location','northwest','FontSize',16)
 
 %% Deformed plot
-figure; title(sprintf('Deformed Plot MF: %d',magnificationFactor));
+figure; 
+% title(sprintf('Deformed Plot MF: %d',magnificationFactor));
 meshPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,nNodes)','b','No');
 % meshPlot(elements(1:nNodes1,:),nodes(1:nNodes1,:)+magnificationFactor*reshape(displacementsVector(1:nNodes1),[],nNodes1)','b','No');
-
+% xlim([0 700])
 
 %% Von Mises Plot
 Sxx = squeeze(elementStressExtrapolated(:,:,1))'; Syy = squeeze(elementStressExtrapolated(:,:,2))'; Szz = squeeze(elementStressExtrapolated(:,:,3))'; Szx = squeeze(elementStressExtrapolated(:,:,4))';
@@ -203,7 +217,27 @@ fallaNodes = elements(fallaNodes);
 scatter(nodes(fallaNodes,1),nodes(fallaNodes,2),'red','filled');
 % caxis([0 250            ])
 
+%% Teorico VM Plot 
+
+figure; hold on; title('\sigma_{VM}','Interpreter','tex','FontSize',16); grid
+log = find(abs(nodes(:,2) - zPlot) < 10);
+for i = 1:size(log,1)
+    eleLog = ismember(elements,log(i));
+    iEles = find(any(eleLog')');
+    for n = 1:size(iEles)
+        auxStress(n) = vonMisesStress(iEles(n),eleLog(iEles(n),:)');
+    end
+    h(1) = scatter(nodes(log(i),1),mean(auxStress));
+    auxStress = [];
+end
 
 
+xlabel('r [mm]','FontSize',16); ylabel('MPa','FontSize',16);
+aux = plot(a:0.1:b,sigmaVM1(a:0.1:b),'r',b:0.1:c,sigmaVM2(b:0.1:c),'b');
+h(2) = aux(1);
+legend(h,{'FEA','Sol. Teorica'},'Location','best','FontSize',16)
+ac = gca();
+ac.XAxis.FontSize = 16;
+ac.YAxis.FontSize = 16;
 
 

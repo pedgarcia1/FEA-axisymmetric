@@ -156,7 +156,7 @@ end
 
 aux = plot(a:0.1:b,sigmaR1(a:0.1:b),'r',b:0.1:c,sigmaR2(b:0.1:c),'b');
 h(2) = aux(1);
-legend(h,{'FEA','Sol. Teorica'},'Location','northwest')
+legend(h,{'FEA','Sol. Teorica'},'Location','northwest','FontSize',14)
 
 subplot(1,2,2); hold on; title('\sigma_{\theta}','Interpreter','tex'); grid
 log = find(abs(nodes(:,2) - zPlot) < 10);
@@ -172,7 +172,7 @@ end
 
 aux = plot(a:0.1:b,sigmaTita1(a:0.1:b),'r',b:0.1:c,sigmaTita2(b:0.1:c),'b');
 h(2) = aux(1);
-legend(h,{'FEA','Sol. Teorica'},'Location','northwest')
+legend(h,{'FEA','Sol. Teorica'},'Location','northwest','FontSize',14)
 
 %%
 uTeorico= @(a,b,pInt,pOut,r) ((1-nu)/E).* C1(a,b,pInt,pOut) .* r + ((1+nu)/E).*  C2(a,b,pInt,pOut) ./r;
@@ -186,7 +186,7 @@ LBar = FTapas*1200/(pi*(b^2-a^2)*E);
 uBar = nu*LBar;
 aux = plot(a:0.1:b,uTeorico(a,b,pressureNormal,pInterferencia,a:0.1:b),'r',b:0.1:c,uTeorico(b,c,pInterferencia,0,b:0.1:c),'b');
 h(2) = aux(1);
-legend(h,{'FEA','Sol. Teorica'},'Location','northwest')
+legend(h,{'FEA','Sol. Teorica'},'Location','northwest','FontSize',14)
 %% Solucion teorica semiesfera
 % eEsf = 64.1;
 % ri = a; ro = a+eEsf; pi = pressureNormal; po = 0;
@@ -240,10 +240,10 @@ meshPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensi
 % Von Mises Plot
 Sxx = squeeze(elementStressExtrapolated(:,:,1))'; Syy = squeeze(elementStressExtrapolated(:,:,2))'; Szz = squeeze(elementStressExtrapolated(:,:,3))'; Szx = squeeze(elementStressExtrapolated(:,:,4))';
 vonMisesStress = transpose(1/sqrt(2)*sqrt( (Sxx-Syy).^2 + (Syy-Szz).^2 + (Szz-Sxx).^2 + 6*Szx.^2 ));
-figure; subplot(1,2,1); title('Int Svm [Mpa]')
+figure; subplot(1,2,1); title('\sigma_{VM} [Mpa]','FontSize',14)
 meshPlot(elements1,nodes1+magnificationFactor*reshape(displacementsVector(convertNode2Dof(1:nNodes1,nDimensions)),nDimensions,[])','b','No');
 bandPlot(elements1,nodes1+magnificationFactor*reshape(displacementsVector(convertNode2Dof(1:nNodes1,nDimensions)),nDimensions,[])',vonMisesStress(1:nNodes1,:));
- subplot(1,2,2); title('Out Svm [Mpa]')
+ subplot(1,2,2); title('\sigma_{VM} [Mpa]','FontSize',14)
 meshPlot(elements2,nodes2+magnificationFactor*reshape(displacementsVector(convertNode2Dof(nNodes1+1:nNodes2+nNodes1,nDimensions)),nDimensions,[])','b','No');
 bandPlot(elements2,nodes2+magnificationFactor*reshape(displacementsVector(convertNode2Dof(nNodes1+1:nNodes2+nNodes1,nDimensions)),nDimensions,[])',vonMisesStress(nElements1+1:end,:));
 
