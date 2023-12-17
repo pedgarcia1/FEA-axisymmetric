@@ -141,6 +141,7 @@ sigmaTita2=@(r) C1(b,c,pInterferencia,0)+C2(b,c,pInterferencia,0)./r.^2;
 sigmaVM1=@(r) sqrt(0.5*((sigmaR1(r)-sigmaTita1(r)).^2 + (sigmaTita1(r)-sigma_z1).^2 + (sigma_z1-sigmaR1(r)).^2 ));
 sigmaVM2=@(r) sqrt(0.5*((sigmaR2(r)-sigmaTita2(r)).^2 + (sigmaTita2(r)-0).^2 + (0-sigmaR2(r)).^2 ));
 
+resultadosNX = importResultadosNX('finalResultadosNX.csv');
 
 figure; subplot(1,2,1); hold on; title('\sigma_{r}','Interpreter','tex'); grid
 % zPlot = -500;
@@ -151,14 +152,20 @@ for i = 1:size(log,1)
     iEles = find(any(eleLog')');
     for n = 1:size(iEles)
         auxStress(n) = elementStressExtrapolated(iEles(n),eleLog(iEles(n),:)',1);
+        try
+            auxNXStress(n) = resultadosNX.RR(resultadosNX.ElemID == iEles(n) & resultadosNX.NodeID == log(i));
+        catch
+            auxNXStress = [];
+        end
     end
     h(1) = scatter(nodes(log(i),1),mean(auxStress));
+    h(2) = scatter(nodes(log(i),1),mean(auxNXStress),'x');
     auxStress = [];
 end
 
 aux = plot(a:0.1:b,sigmaR1(a:0.1:b),'r',b:0.1:c,sigmaR2(b:0.1:c),'b');
-h(2) = aux(1);
-legend(h,{'FEA','Sol. Teorica'},'Location','northwest','FontSize',16)
+h(3) = aux(1);
+legend(h,{'FEA','NX','Sol. Teorica'},'Location','northwest','FontSize',16)
 xlabel('r [mm]','FontSize',16); ylabel('MPa','FontSize',16);
 ac = gca();
 ac.XAxis.FontSize = 16;
@@ -171,14 +178,20 @@ for i = 1:size(log,1)
     iEles = find(any(eleLog')');
     for n = 1:size(iEles)
         auxStress(n) = elementStressExtrapolated(iEles(n),eleLog(iEles(n),:)',2);
+        try
+            auxNXStress(n) = resultadosNX.TT(resultadosNX.ElemID == iEles(n) & resultadosNX.NodeID == log(i));
+        catch
+            auxNXStress = [];
+        end
     end
     h(1) = scatter(nodes(log(i),1),mean(auxStress));
+    h(2) = scatter(nodes(log(i),1),mean(auxNXStress),'x');
     auxStress = [];
 end
 
 aux = plot(a:0.1:b,sigmaTita1(a:0.1:b),'r',b:0.1:c,sigmaTita2(b:0.1:c),'b');
-h(2) = aux(1);
-legend(h,{'FEA','Sol. Teorica'},'Location','northwest','FontSize',16)
+h(3) = aux(1);
+legend(h,{'FEA','NX','Sol. Teorica'},'Location','northwest','FontSize',16)
 xlabel('r [mm]','FontSize',16); ylabel('MPa','FontSize',16);
 ac = gca();
 ac.XAxis.FontSize = 16;
@@ -190,9 +203,6 @@ figure; hold on; title('u'); grid
 log = find(abs(nodes(:,2) - zPlot) < 10);
 aux = scatter(nodes(log,1),displacementsMatrix(log,1));
 h(1) = aux(1);
-FTapas = pi*a^2*pressureNormal;
-LBar = FTapas*1200/(pi*(b^2-a^2)*E); 
-uBar = nu*LBar;
 aux = plot(a:0.1:b,uTeorico(a,b,pressureNormal,pInterferencia,a:0.1:b),'r',b:0.1:c,uTeorico(b,c,pInterferencia,0,b:0.1:c),'b');
 h(2) = aux(1);
 legend(h,{'FEA','Sol. Teorica'},'Location','northwest','FontSize',16)
@@ -209,13 +219,12 @@ Sxx = squeeze(elementStressExtrapolated(:,:,1))'; Syy = squeeze(elementStressExt
 vonMisesStress = transpose(1/sqrt(2)*sqrt( (Sxx-Syy).^2 + (Syy-Szz).^2 + (Szz-Sxx).^2 + 6*Szx.^2 ));
 
 % toda la malla VM Plot
-figure; title('\sigma_{Von Mises} [MPa]','Interpreter','tex')
+figure; title('\sigma_{VM} [MPa]','Interpreter','tex','FontSize',16)
 meshPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,[])','b','No');
 bandPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,[])',vonMisesStress);
 fallaNodes = vonMisesStress > 250*ones(nElements,4);
 fallaNodes = elements(fallaNodes);
 scatter(nodes(fallaNodes,1),nodes(fallaNodes,2),'red','filled');
-% caxis([0 250            ])
 
 %% Teorico VM Plot 
 
@@ -226,16 +235,21 @@ for i = 1:size(log,1)
     iEles = find(any(eleLog')');
     for n = 1:size(iEles)
         auxStress(n) = vonMisesStress(iEles(n),eleLog(iEles(n),:)');
+        try
+            auxNXStress(n) = resultadosNX.VonMises(resultadosNX.ElemID == iEles(n) & resultadosNX.NodeID == log(i));
+        catch
+            auxNXStress = [];
+        end
     end
     h(1) = scatter(nodes(log(i),1),mean(auxStress));
+    h(2) = scatter(nodes(log(i),1),mean(auxNXStress),'x');
     auxStress = [];
 end
 
-
 xlabel('r [mm]','FontSize',16); ylabel('MPa','FontSize',16);
 aux = plot(a:0.1:b,sigmaVM1(a:0.1:b),'r',b:0.1:c,sigmaVM2(b:0.1:c),'b');
-h(2) = aux(1);
-legend(h,{'FEA','Sol. Teorica'},'Location','best','FontSize',16)
+h(3) = aux(1);
+legend(h,{'FEA','NX','Sol. Teorica'},'Location','northwest','FontSize',16)
 ac = gca();
 ac.XAxis.FontSize = 16;
 ac.YAxis.FontSize = 16;

@@ -43,7 +43,8 @@ h1 = patch('Faces',elementNodesArray(:,nodeReorderVector),'Vertices',nodesPositi
 set(h1,'EdgeColor',color,'FaceColor','none');
 
 set(gca,'XTick',[],'YTick',[],'XColor',[1 1 1],'YColor',[1 1 1]);
-daspect([1 1 1]); hold on;
+% daspect([1 1 1]); 
+hold on;
 
 %% Entity numbering
 if strcmp(numbering,'Yes')

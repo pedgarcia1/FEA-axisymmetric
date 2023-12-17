@@ -5,7 +5,7 @@ a = 300; %mm, radio interior
 sigma_y = 250; %Mpa
 p = 100; %Mpa
 FS = 1;
-tapasFlag = 1; % tapas serian los casquetes, si no hay la tension en z es distinta
+tapasFlag = 0; % tapas serian los casquetes, si no hay la tension en z es distinta
 planeStrainFlag = 0;
 % para solo zunchado
 % tapasFlag = 0; planeStrainFlag = 0;
@@ -18,7 +18,7 @@ else
     fprintf("Caso plane stress \n")
 end
 
-[espesores, D, interferencia, p_interferencia] = RP_2capa_v2(tapasFlag,planeStrainFlag,p, sigma_y, FS, a, E, v)
+[espesores, D, ~, p_interferencia] = RP_2capa_v2(tapasFlag,planeStrainFlag,p, sigma_y, FS, a, E, v)
 b = a + espesores(1);
 c = b + espesores(2);
 

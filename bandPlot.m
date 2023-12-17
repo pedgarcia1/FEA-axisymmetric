@@ -65,7 +65,7 @@ for iElement = 1:nElement
 end
 
 % Scaling
-colormap(jet(nBands))
+colormap(jet(nBands));
 clim(bandplotLimits)
 
 if nBands <= 20
@@ -81,7 +81,8 @@ for iTick = 1:length(ticks)
     tickLabels{iTick} = sprintf('%.2f',ticks(iTick));
 end
 
-colorbar('YTick',ticks,'YTickLabel',tickLabels);
+cb = colorbar('YTick',ticks,'YTickLabel',tickLabels);
+cb.FontSize = 16;
 set(gca,'XTick',[],'YTick',[])
 daspect([1 1 1])
 

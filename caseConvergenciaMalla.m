@@ -190,9 +190,9 @@ for i = 1:size(resultados,1)-1
 
     phi(1) = resultados(i,3);
     phi(2) = resultados(i+1,3);
-    h(1) = resultados(i,5);
-    h(2) = resultados(i+1,5);
-    e(i) = calcErr(phi,h);
+    h(1) = (resultados(i,5)).^(-2/2);
+    h(2) = (resultados(i+1,5)).^(-2/2);
+    e(i) = abs(calcErr(phi,h));
 
 end
 
