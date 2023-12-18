@@ -4,10 +4,10 @@ clear; close all; set(0,'DefaultFigureWindowStyle','docked');
 E = 200e3; nu = 0.3;
 pressureNormal = 100;
 a = 1; b = 2;  h = 1;
-nElementsZ = 2; nElementsR = 2;  distorsion = 0;   
+nElementsZ = 2; nElementsR = 2;  distorsion = 0.5;   
 numbering = 'Yes'; % Yes/No
 tol = 0.1; 
-caso = 2;
+caso = 3;
 
 %% Preprocess
 
@@ -116,16 +116,16 @@ meshPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensi
 
 % Stresses plot
 figure;
-subplot(2,2,1); title('\sigma_{r}','Interpreter','tex')
+subplot(2,2,1); title('\sigma_{r}','Interpreter','tex','FontSize',16)
 meshPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,nNodes)','b','No');
 bandPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,nNodes)',squeeze(elementStressAtGaussPoints(:,:,1)),[-150 0]);
-subplot(2,2,2); title('\sigma_{\theta}','Interpreter','tex')
+subplot(2,2,2); title('\sigma_{\theta}','Interpreter','tex','FontSize',16)
 meshPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,nNodes)','b','No');
 bandPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,nNodes)',squeeze(elementStressAtGaussPoints(:,:,2)),[-150 0]);
-subplot(2,2,3); title('\sigma_{z}','Interpreter','tex')
+subplot(2,2,3); title('\sigma_{z}','Interpreter','tex','FontSize',16)
 meshPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,nNodes)','b','No');
 bandPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,nNodes)',squeeze(elementStressAtGaussPoints(:,:,3)),[-150 0]);
-subplot(2,2,4); title('\tau_{zr}','Interpreter','tex')
+subplot(2,2,4); title('\tau_{zr}','Interpreter','tex','FontSize',16)
 meshPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,nNodes)','b','No');
 bandPlot(elements,nodes+magnificationFactor*reshape(displacementsVector,nDimensions,nNodes)',squeeze(elementStressAtGaussPoints(:,:,4)),[-150 0]);
 

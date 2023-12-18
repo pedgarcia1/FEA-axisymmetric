@@ -37,7 +37,9 @@ nDimensions=2;              % Problem dimension
 
 % import NX mesh
 msh = impq4(mshTxt);
+msh = impq4('final_ref_7.dat')
 nodes = msh.nodes; elements = msh.elements;
+size(elements,1)
 loads = impLoadsNX(loadsTxt);
 %
 
