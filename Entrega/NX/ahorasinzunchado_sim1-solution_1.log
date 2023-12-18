@@ -1,0 +1,112 @@
+NX Nastran V12.2 (Intel64 Family 6 Model 140 Stepping 1 Windows 10  ) Control File:
+-------------------------------------------------------------------
+Nastran BUFFSIZE=32769 $(c:/program files/siemens/nx 12.0/nxnastran/conf/nast12.rcf[1])
+Nastran BUFFPOOL=20.0X $(c:/program files/siemens/nx 12.0/nxnastran/conf/nast12.rcf[4])
+Nastran DIAGA=128 DIAGB=0 $(c:/program files/siemens/nx 12.0/nxnastran/conf/nast12.rcf[8])
+Nastran SYSTEM(442)=2 $(command line[5])
+Nastran REAL=2103967744 $(Memory limit for MPI and other specialized modules)
+JID='C:\Users\usuario\Documents\NX\ahorasinzunchado_sim1-solution_1.dat'
+OUT='./ahorasinzunchado_sim1-solution_1'
+MEM=947492864
+MACH='Intel64 Family 6 Model 140 Stepping 1'
+OPER='Windows 10'
+OSV=' '
+MODEL='11th Gen Intel(R) Core(TM) i7-1165G7 @ 2.80GHz (DESKTOP-08LFC3S)'
+CONFIG=8666
+NPROC=8
+symbol=DELDIR='c:/program files/siemens/nx 12.0/nxnastran/nxn12p02/nast/del' $(program default)
+symbol=DEMODIR='c:/program files/siemens/nx 12.0/nxnastran/nxn12p02/nast/demo' $(program default)
+symbol=SSSALTERDIR='c:/program files/siemens/nx 12.0/nxnastran/nxn12p02/nast/misc/sssalter' $(program default)
+symbol=TPLDIR='c:/program files/siemens/nx 12.0/nxnastran/nxn12p02/nast/tpl' $(program default)
+SDIR='c:/users/usuario/appdata/local/temp/ahorasinzunchado_sim1-solution_1.T35224_30'
+DBS='c:/users/usuario/appdata/local/temp/ahorasinzunchado_sim1-solution_1.T35224_30'
+SCR=yes
+SMEM=20.0X
+NEWDEL='c:/program files/siemens/nx 12.0/nxnastran/nxn12p02/em64tntl/SSS'
+DEL='NXNDEF'
+AUTH='27800@localhost'
+AUTHQUE=0
+MSGCAT='c:/program files/siemens/nx 12.0/nxnastran/nxn12p02/em64tntl/analysis.msg'
+MSGDEST='f06'
+PROG=bundle
+NEWS='c:/program files/siemens/nx 12.0/nxnastran/nxn12p02/nast/news.txt'
+UMATLIB='libnxumat.dll'
+-------------------------------------------------------------------
+NXN_ISHELLPATH=C:\Program Files\Siemens\NX 12.0\nxnastran\bin
+NXN_JIDPATH=
+PATH=c:/program files/siemens/nx 12.0/nxnastran/nxn12p02/em64tntl;c:/program files/siemens/nx 12.0/nxnastran/nxn12p02/em64tntl/sysnoise;c:/program files/siemens/nx 12.0/nxnastran/nxn12p02/em64tntl/sml;c:/program files/siemens/nx 12.0/nxnastran/nxn12p02/em64tntl/impi/bin;c:/program files/siemens/nx 12.0/nxnastran/nxn12p02/em64tntl/monitor;C:\Program Files\Siemens\NX 12.0\nxbin;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\ZeroTier\One\;C:\Program Files\MATLAB\R2023a\runtime\win64;C:\Program Files\MATLAB\R2023a\bin;C:\Program Files\dotnet\;C:\Program Files\Git\cmd;C:\Program Files\PuTTY\;C:\Program Files (x86)\Schneider Electric\EcoStruxure Machine Expert - Basic\;C:\Users\usuario\AppData\Local\Programs\Python\Python312\Scripts\;C:\Users\usuario\AppData\Local\Programs\Python\Python312\;C:\Users\usuario\AppData\Local\Programs\Python\Launcher\;C:\Users\usuario\AppData\Local\Microsoft\WindowsApps;C:\Users\usuario\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\MSYS2\mingw64\bin;C:\Users\usuario\AppData\Local\GitHubDesktop\bin;C:\Program Files\Git\bin;C:\Program Files\Git\cmd;
+Command Line: ahorasinzunchado_sim1-solution_1.dat prog=bundle old=no scratch=yes sys442=2
+Current Dir: C:\Users\usuario\Documents\NX
+Executable:  c:/program files/siemens/nx 12.0/nxnastran/nxn12p02/em64tntl/analysis.exe
+NXN_MSG:     stderr
+FPE:         no
+-------------------------------------------------------------------
+Current resource limits:
+ Physical memory:                    16064 MB
+ Physical memory available:           2581 MB
+ Paging file size:                   34496 MB
+ Paging file size available:          7769 MB
+ Virtual memory:                 134217727 MB
+ Virtual memory available:       134213570 MB
+-------------------------------------------------------------------
+System configuration:
+ Hostname:         DESKTOP-08LFC3S
+ Architecture:     em64tnt
+ Platform:         Intel64 Family 6 Model 140 Stepping 1 Windows 10  
+ Model:            11th Gen Intel(R) Core(TM) i7-1165G7 @ 2.80GHz
+ Clock freq.:      2803 MHz
+ Number of CPUs:   8
+ Executable:       standard
+ Raw model ID:     8666
+ Config number:    8666
+ Physical memory:  16064 MB
+ Virtual memory:   34496 MB
+ Numeric format:   64-bit little-endian IEEE.
+ Bytes per word:   8
+ Disk block size:  512 bytes (64 words)
+ Remote shell cmd: Remote capabilities not available.
+-------------------------------------------------------------------
+NX Nastran started  Thu Dec 14 19:12:30 HedA 2023
+ 19:12:30  Beginning Analysis
+
+ 19:12:30  NX NASTRAN Authorization Information - System Attributes
+ 19:12:30  --------------------------------------------------------
+ 19:12:30  Model: 11th Gen Intel(R) Core(TM) i7-11
+ 19:12:30  Machine: Intel64 Family 6 Model 140 Stepp
+ 19:12:30  OS: Windows 10
+ 19:12:30  Version:
+ 19:12:30  License File(s): 27800@localhost
+
+
+ 19:12:30  NX NASTRAN Licensing Information
+ 19:12:30  -------------------------------
+ 19:12:30  Sold To ID:            1002010 - *SolidSQUAD*
+ 19:12:30  Webkey Access Code:    5555555555
+ 19:12:30  License File Issuer:   UGS
+
+
+ 19:12:30  NX NASTRAN Authorization Information - Checkout Successful
+ 19:12:30  ----------------------------------------------------------
+ 19:12:30  License for module NX Nastran Basic - NX Desktop (Bundle)  checked out successfully
+
+ 19:12:30  Loading Shared Library C:\Program Files\Siemens\NX 12.0\nxcae_extras\tmg\exe\mayamoncomm.dll
+
+Starting viewer with UGII_MONITOR_DIR set to 'C:\Program Files\Siemens\NX 12.0\nxcae_extras\tmg\exe'
+Starting monitor viewer at C:\Program Files\Siemens\NX 12.0\nxcae_extras\tmg\exe/xcsmon_viewer.exe
+ 19:12:32  Analysis started.
+ 19:12:32  Geometry access/verification to CAD part initiated (if needed).
+ 19:12:32  Geometry access/verification to CAD part successfully completed (if needed).
+ 19:12:32  Finite element model generation started.
+ 19:12:33  Finite element model generated 23940 degrees of freedom.
+ 19:12:33  Finite element model generation successfully completed.
+ 19:12:33  Application of Loads and Boundary Conditions to the finite element model started.
+ 19:12:33  Application of Loads and Boundary Conditions to the finite element model successfully completed.
+ 19:12:33  Solution of the system equations for linear statics started.
+ 19:12:33  Solution of the system equations for linear statics successfully completed.
+ 19:12:33  Linear static analysis completed.
+ 19:12:37  NSEXIT: EXIT(0)
+ 19:12:37  Analysis complete  0
+Real:        6.943 seconds ( 0:00:06.943)
+User:        4.640 seconds ( 0:00:04.640)
+Sys:         0.218 seconds ( 0:00:00.218)
+NX Nastran finished Thu Dec 14 19:12:37 HedA 2023

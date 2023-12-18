@@ -107,6 +107,11 @@ displacementsVector(isFree) = displacementsVector(isFree) + displacementsReduced
 magnificationFactor=1;
 displacementsMatrix = reshape(displacementsVector,nDimensions,nNodes)';  %mm
 %% Solucion teorica zunchado
+pInterferenciaInt = 38.9;
+pInterferenciaOut = 38.9;
+pInterferencia = 38.9;
+
+
 if planeStrainFlag
     E = E/(1-nu^2);
     nu = nu/(1-nu);

@@ -1,0 +1,65 @@
+
+*** 19:12:30 *** 
+Starting Nastran Exporter
+
+*** 19:12:30 *** 
+Writing file C:\Users\usuario\Documents\NX\ahorasinzunchado_sim1-solution_1.dat
+
+*** 19:12:30 *** 
+Writing NX NASTRAN 12.2 compatible deck
+
+*** 19:12:30 *** 
+Writing Nastran System section
+
+*** 19:12:30 *** 
+Writing File Management section
+
+*** 19:12:30 *** 
+Writing Executive Control section
+
+*** 19:12:30 *** 
+Writing Case Control section
+
+*** 19:12:30 *** 
+Writing Bulk Data section
+
+*** 19:12:30 *** 
+Writing Nodes
+
+*** 19:12:30 *** 
+Writing Elements
+
+*** 19:12:30 *** 
+Writing Physical Properties
+
+*** 19:12:30 *** 
+Writing Materials
+
+*** 19:12:30 *** 
+Writing Degree-of-Freedom Sets
+
+*** 19:12:30 *** 
+Writing Loads and Constraints
+
+*** 19:12:30 *** 
+Writing Coordinate Systems
+
+*** 19:12:30 *** 
+Summary of Bulk Data cards written
+
++----------+----------+
+|   NAME   |  NUMBER  |
++----------+----------+
+| CQUADX4  | 3762     |
+| GRID     | 3990     |
+| MAT1     | 1        |
+| PARAM    | 6        |
+| PLOADX1  | 209      |
+| PSOLID   | 1        |
+| SPC      | 39       |
+| SPCADD   | 1        |
++----------+----------+
+
+*** 19:12:30 *** 
+Nastran Deck Successfully Written
+
