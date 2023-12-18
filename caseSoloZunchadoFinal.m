@@ -155,14 +155,14 @@ for i = 1:size(log,1)
         auxStress(n) = elementStressExtrapolated(iEles(n),eleLog(iEles(n),:)',1);
     end
     h(1) = scatter(nodes(log(i),1),mean(auxStress));
+
     auxStress = [];
 end
-
-% aux = scatter(stressNX.RCoord,stressNX.RR,'x');
-% h(2) = aux(1);
+    resNXRR = importdata('resultadosZunchadoStressRR.txt');
+    h(2) = scatter(resNXRR(:,2)+a,resNXRR(:,3),'x');
 aux = plot(a:0.1:b,sigmaR1(a:0.1:b),'r',b:0.1:c,sigmaR2(b:0.1:c),'b');
-h(2) = aux(1);
-legend(h,{'FEA','Sol. Teorica'},'Location','best','FontSize',16)
+h(3) = aux(1);
+legend(h,{'FEA','NX','Sol. Teorica'},'Location','best','FontSize',16)
 xlabel('r [mm]','FontSize',16)
 ylabel('MPa','FontSize',16)
 
@@ -175,14 +175,17 @@ for i = 1:size(log,1)
         auxStress(n) = elementStressExtrapolated(iEles(n),eleLog(iEles(n),:)',2);
     end
     h(1) = scatter(nodes(log(i),1),mean(auxStress));
+    
     auxStress = [];
 end
 
-% aux = scatter(stressNX.RCoord,stressNX.TT,'x');
-% h(2) = aux(1);
+resNXTT = importdata('resultadosZunchadoStressTT.txt');
+    h(2) = scatter(resNXTT(:,2)+a,resNXTT(:,3),'x');
+
+
 aux = plot(a:0.1:b,sigmaTita1(a:0.1:b),'r',b:0.1:c,sigmaTita2(b:0.1:c),'b');
 h(3) = aux(1);
-legend(h,{'FEA','Sol. Teorica'},'Location','best','FontSize',16)
+legend(h,{'FEA','NX','Sol. Teorica'},'Location','best','FontSize',16)
 xlabel('r [mm]','FontSize',16)
 ylabel('MPa','FontSize',16)
 %%
